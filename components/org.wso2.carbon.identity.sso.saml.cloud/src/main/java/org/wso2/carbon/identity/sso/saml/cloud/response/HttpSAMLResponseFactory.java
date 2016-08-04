@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.identity.sso.saml.cloud.bean.message.response;
+package org.wso2.carbon.identity.sso.saml.cloud.response;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;

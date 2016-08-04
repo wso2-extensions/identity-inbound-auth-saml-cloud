@@ -32,8 +32,8 @@ import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SSOServiceProviderConfigManager;
 import org.wso2.carbon.identity.sso.saml.cloud.configs.SalesForceConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.processor.SSOLoginProcessor;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.message.request.SAMLIdentityRequestFactory;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.message.response.HttpSAMLResponseFactory;
+import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdentityRequestFactory;
+import org.wso2.carbon.identity.sso.saml.cloud.response.HttpSAMLResponseFactory;
 import org.wso2.carbon.identity.sso.saml.cloud.configs.SAMLAuthenticatorConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.processor.SPInitSSOAuthnRequestProcessor;
 import org.wso2.carbon.registry.core.service.RegistryService;
@@ -50,7 +50,7 @@ import java.util.Hashtable;
 import java.util.Scanner;
 
 /**
- * @scr.component name="identity.sso.samlnew.component" immediate="true"
+ * @scr.component name="identity.sso.saml.cloud.component" immediate="true"
  * @scr.reference name="registry.service"
  * interface="org.wso2.carbon.registry.core.service.RegistryService"
  * cardinality="1..1" policy="dynamic" bind="setRegistryService"

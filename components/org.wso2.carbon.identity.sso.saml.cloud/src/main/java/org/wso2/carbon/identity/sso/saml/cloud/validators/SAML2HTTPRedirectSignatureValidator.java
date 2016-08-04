@@ -18,7 +18,7 @@
 package org.wso2.carbon.identity.sso.saml.cloud.validators;
 
 import org.wso2.carbon.identity.base.IdentityException;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.message.request.SAMLIdentityRequest;
+import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdentityRequest;
 import org.wso2.carbon.identity.sso.saml.cloud.exception.IdentitySAML2SSOException;
 import org.opensaml.xml.security.SecurityException;
 

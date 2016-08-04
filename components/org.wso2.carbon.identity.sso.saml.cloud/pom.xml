@@ -94,7 +94,7 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
-                        <Private-Package>org.wso2.carbon.identity.sso.samlnew.internal</Private-Package>
+                        <Private-Package>org.wso2.carbon.identity.sso.saml.cloud.internal</Private-Package>
                         <Import-Package>
                             javax.cache,
                             javax.crypto.*,
@@ -148,8 +148,9 @@
                             version="${carbon.identity.package.import.version.range}",
                         </Import-Package>
                         <Export-Package>
-                            !org.wso2.carbon.identity.sso.samlnew.internal,
-                            org.wso2.carbon.identity.sso.samlnew.*; version="${carbon.identity.package.export.version}",
+                            !org.wso2.carbon.identity.sso.saml.cloud.internal,
+                            org.wso2.carbon.identity.sso.saml.cloud.*;
+                            version="${carbon.identity.package.export.version}",
                         </Export-Package>
                         <DynamicImport-Package>*</DynamicImport-Package>
                     </instructions>

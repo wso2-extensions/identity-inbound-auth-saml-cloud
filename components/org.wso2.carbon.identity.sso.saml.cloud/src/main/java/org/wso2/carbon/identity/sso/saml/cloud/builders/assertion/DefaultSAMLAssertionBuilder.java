@@ -61,7 +61,7 @@ import org.wso2.carbon.identity.core.util.IdentityCoreConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.builders.SignKeyDataHolder;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.context.SAMLMessageContext;
+import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 
 import java.util.Iterator;
 import java.util.Map;

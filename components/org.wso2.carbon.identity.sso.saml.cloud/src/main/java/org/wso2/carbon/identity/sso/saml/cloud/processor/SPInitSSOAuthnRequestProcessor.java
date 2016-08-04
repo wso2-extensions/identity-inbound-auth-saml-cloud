@@ -28,8 +28,8 @@ import org.wso2.carbon.identity.application.authentication.framework.inbound.Ide
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityRequest;
 import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.context.SAMLMessageContext;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.message.request.SAMLIdentityRequest;
+import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
+import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdentityRequest;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.validators.SSOAuthnRequestValidator;
 

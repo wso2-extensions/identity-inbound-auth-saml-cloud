@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.identity.sso.saml.cloud.bean.message.request;
+package org.wso2.carbon.identity.sso.saml.cloud.request;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

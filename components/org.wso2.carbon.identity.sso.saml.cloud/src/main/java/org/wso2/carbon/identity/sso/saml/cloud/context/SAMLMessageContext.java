@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.identity.sso.saml.cloud.bean.context;
+package org.wso2.carbon.identity.sso.saml.cloud.context;
 
 import org.opensaml.saml2.core.AuthnRequest;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityMessageContext;
@@ -24,7 +24,7 @@ import org.wso2.carbon.identity.application.authentication.framework.model.Authe
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticationResult;
 import org.wso2.carbon.identity.core.model.SAMLSSOServiceProviderDO;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.message.request.SAMLIdentityRequest;
+import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdentityRequest;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.io.Serializable;
