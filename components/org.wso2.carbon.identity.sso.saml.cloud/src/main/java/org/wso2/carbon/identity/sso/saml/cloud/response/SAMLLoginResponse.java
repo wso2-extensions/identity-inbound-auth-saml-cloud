@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.identity.sso.saml.cloud.bean.message.response;
+package org.wso2.carbon.identity.sso.saml.cloud.response;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,7 +37,7 @@ import org.wso2.carbon.identity.application.authentication.framework.inbound.Ide
 import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.model.SAMLSSOServiceProviderDO;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.context.SAMLMessageContext;
+import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 import org.wso2.carbon.identity.sso.saml.cloud.builders.SignKeyDataHolder;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 

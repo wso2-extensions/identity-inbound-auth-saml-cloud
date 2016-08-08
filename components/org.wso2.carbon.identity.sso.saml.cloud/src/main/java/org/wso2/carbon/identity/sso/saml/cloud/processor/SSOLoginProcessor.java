@@ -31,11 +31,11 @@ import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.model.SAMLSSOServiceProviderDO;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.message.response.SAMLResponse;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.context.SAMLMessageContext;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.message.request.SAMLIdentityRequest;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.message.response.SAMLErrorResponse;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.message.response.SAMLLoginResponse;
+import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLResponse;
+import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
+import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdentityRequest;
+import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLErrorResponse;
+import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLLoginResponse;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 import org.wso2.carbon.user.api.UserStoreException;
 

@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.identity.sso.saml.cloud.bean.message.response;
+package org.wso2.carbon.identity.sso.saml.cloud.response;
 
 import org.opensaml.saml2.core.Response;
 import org.opensaml.saml2.core.impl.ResponseBuilder;

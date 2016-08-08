@@ -39,7 +39,7 @@ import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.sso.saml.cloud.builders.X509CredentialImpl;
 import org.wso2.carbon.identity.sso.saml.cloud.exception.IdentitySAML2SSOException;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.message.request.SAMLIdentityRequest;
+import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdentityRequest;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;

@@ -20,10 +20,13 @@ package org.wso2.carbon.identity.sso.saml.cloud.configs;
 
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.identity.application.common.model.Property;
+import org.wso2.carbon.identity.application.mgt.AbstractInboundAuthenticatorConfig;
 import org.wso2.carbon.identity.base.IdentityConstants;
+import org.wso2.carbon.identity.base.IdentityException;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 
-public class SalesForceConfigs extends SAMLAuthenticatorConfigs {
+public class SalesForceConfigs extends AbstractInboundAuthenticatorConfig {
     //This is the key
     @Override
     public String getAuthKey() {
@@ -48,47 +51,77 @@ public class SalesForceConfigs extends SAMLAuthenticatorConfigs {
 
     @Override
     public Property[] getConfigurationProperties() {
-        Property[] samlProps = super.getConfigurationProperties();
-        for(Property prop : samlProps) {
-            if(StringUtils.equals(prop.getName(), SAMLSSOConstants.SAMLFormFields.ISSUER)) {
-                prop.setValue("https://saml.salesforce.com");
-                prop.setDefaultValue("https://saml.salesforce.com");
-                break;
-            }
-        }
-        Property hiddenFields = new Property();
-        hiddenFields.setName(IdentityConstants.ServerConfig.HIDDEN_FIELDS);
-        hiddenFields.setDisplayName("Hidden Fields");
-        hiddenFields.setValue(getHiddenFields(new String[]{SAMLSSOConstants
-                .SAMLFormFields.ENABLE_SINGLE_LOGOUT, SAMLSSOConstants.SAMLFormFields.SLO_RESPONSE_URL,
-                SAMLSSOConstants.SAMLFormFields.SLO_REQUEST_URL, SAMLSSOConstants.SAMLFormFields.ENABLE_ATTR_PROF,
-                SAMLSSOConstants.SAMLFormFields.ENABLE_DEFAULT_ATTR_PROF, SAMLSSOConstants.SAMLFormFields
-                .ENABLE_AUDIENCE_RESTRICTION, SAMLSSOConstants.SAMLFormFields.AUDIENCE_URLS, SAMLSSOConstants
-                .SAMLFormFields.ENABLE_RECIPIENTS, SAMLSSOConstants.SAMLFormFields.RECEIPIENT_URLS, SAMLSSOConstants
-                .SAMLFormFields.ENABLE_IDP_INIT_SSO, SAMLSSOConstants.SAMLFormFields.ENABLE_IDP_INIT_SLO,
-                SAMLSSOConstants.SAMLFormFields.IDP_SLO_URLS}));
+        Property issuer = new Property();
+        issuer.setName(SAMLSSOConstants.SAMLFormFields.ISSUER);
+        issuer.setDisplayName("Issuer");
+        issuer.setValue("https://saml.salesforce.com");
+        issuer.setDefaultValue("https://saml.salesforce.com");
 
-        Property[] properties = new Property[samlProps.length + 1];
-        System.arraycopy(samlProps, 0, properties, 0, properties.length - 1);
-        properties[properties.length - 1] = hiddenFields;
-        return properties;
+        Property appType = new Property();
+        appType.setName("wellknownAppType");
+        appType.setType("hidden");
+        appType.setValue(getConfigName());
+        appType.setDisplayName("UI Config Type");
+
+        Property acsurls = new Property();
+        acsurls.setName(SAMLSSOConstants.SAMLFormFields.ACS_URLS);
+        acsurls.setDisplayName("Assertion Consumer URLs");
+        acsurls.setDescription("The url where you should redirected after authenticated.");
+
+        Property acsindex = new Property();
+        acsindex.setName(SAMLSSOConstants.SAMLFormFields.ACS_INDEX);
+        acsindex.setDisplayName("Assertion Consumer Service Index");
+        try {
+            acsindex.setValue(Integer.toString(IdentityUtil.getRandomInteger()));
+        } catch (IdentityException e) {
+            //log.error("Error occurred when generating attribute consumer service index.", e);
+        }
+
+        Property defaultacs = new Property();
+        defaultacs.setName(SAMLSSOConstants.SAMLFormFields.DEFAULT_ACS);
+        defaultacs.setDisplayName("Default Assertion Consumer URL");
+
+        Property nameid = new Property();
+        nameid.setName(SAMLSSOConstants.SAMLFormFields.NAME_ID_FORMAT);
+        nameid.setDisplayName("NameID format ");
+
+        Property alias = new Property();
+        alias.setName(SAMLSSOConstants.SAMLFormFields.ALIAS);
+        alias.setDisplayName("Certificate Alias");
+
+        Property signAlgo = new Property();
+        signAlgo.setName(SAMLSSOConstants.SAMLFormFields.SIGN_ALGO);
+        signAlgo.setDisplayName("Response Signing Algorithm ");
+        signAlgo.setValue("http://www.w3.org/2000/09/xmldsig#dsa-sha1");
+
+        Property digestAlgo = new Property();
+        digestAlgo.setName(SAMLSSOConstants.SAMLFormFields.DIGEST_ALGO);
+        digestAlgo.setDisplayName("Response Digest Algorithm ");
+        digestAlgo.setValue("http://www.w3.org/2001/04/xmldsig-more#md5");
+
+        Property enableSign = new Property();
+        enableSign.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_RESPONSE_SIGNING);
+        enableSign.setDisplayName("Enable Response Signing");
+        enableSign.setValue("false");
+
+        Property enableSigValidation = new Property();
+        enableSigValidation.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_SIGNATURE_VALIDATION);
+        enableSigValidation.setDisplayName("Enable Signature Validation in Authentication Requests and Logout " +
+                "Requests");
+        enableSigValidation.setValue("false");
+
+        Property enableEncAssert = new Property();
+        enableEncAssert.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_ENCRYPTION);
+        enableEncAssert.setDisplayName("Enable Assertion Encryption ");
+        enableEncAssert.setValue("false");
+
+        return new Property[]{issuer, appType, acsurls, acsindex, defaultacs, nameid, alias, signAlgo, digestAlgo,
+                enableSign, enableSigValidation, enableEncAssert};
     }
 
     @Override
     public String getRelyingPartyKey() {
         return SAMLSSOConstants.SAMLFormFields.ISSUER;
-    }
-
-    private String getHiddenFields(String[] hiddenFields) {
-        StringBuilder hiddenFieldsStr = new StringBuilder();
-        for (int cntr = 0; cntr < hiddenFields.length; cntr++) {
-            if (cntr != hiddenFields.length - 1) {
-                hiddenFieldsStr.append(hiddenFields[cntr] + SAMLSSOConstants.SAMLFormFields.ACS_SEPERATE_CHAR);
-            } else {
-                hiddenFieldsStr.append(hiddenFields[cntr]);
-            }
-        }
-        return hiddenFieldsStr.toString();
     }
 
 }

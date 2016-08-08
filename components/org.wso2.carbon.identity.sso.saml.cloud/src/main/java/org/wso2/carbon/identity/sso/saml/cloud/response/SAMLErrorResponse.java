@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.identity.sso.saml.cloud.bean.message.response;
+package org.wso2.carbon.identity.sso.saml.cloud.response;
 
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityMessageContext;
 

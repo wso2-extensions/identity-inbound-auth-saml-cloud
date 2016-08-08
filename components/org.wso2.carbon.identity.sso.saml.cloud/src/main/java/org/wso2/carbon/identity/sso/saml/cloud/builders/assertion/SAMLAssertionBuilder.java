@@ -21,7 +21,7 @@ package org.wso2.carbon.identity.sso.saml.cloud.builders.assertion;
 import org.joda.time.DateTime;
 import org.opensaml.saml2.core.Assertion;
 import org.wso2.carbon.identity.base.IdentityException;
-import org.wso2.carbon.identity.sso.saml.cloud.bean.context.SAMLMessageContext;
+import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 
 public interface SAMLAssertionBuilder {
 
