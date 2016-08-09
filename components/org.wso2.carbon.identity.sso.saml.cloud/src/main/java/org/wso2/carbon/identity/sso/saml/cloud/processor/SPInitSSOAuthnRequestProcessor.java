@@ -28,6 +28,7 @@ import org.wso2.carbon.identity.application.authentication.framework.inbound.Ide
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityRequest;
 import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
+import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdentityRequest;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
@@ -43,7 +44,7 @@ public class SPInitSSOAuthnRequestProcessor extends IdentityProcessor {
 
     @Override
     public String getName() {
-        return "SPInitSSOAuthnRequestProcessor";
+        return SAMLSSOConstants.SAMLFormFields.SAML_SSO;
     }
 
     @Override
