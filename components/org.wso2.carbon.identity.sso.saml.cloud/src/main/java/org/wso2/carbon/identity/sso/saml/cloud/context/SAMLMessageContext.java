@@ -32,6 +32,7 @@ import java.util.Map;
 
 public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable> extends IdentityMessageContext {
 
+    private static final long serialVersionUID = 104634801939285909L;
     /**
      * The unmarshelled SAML Request
      */

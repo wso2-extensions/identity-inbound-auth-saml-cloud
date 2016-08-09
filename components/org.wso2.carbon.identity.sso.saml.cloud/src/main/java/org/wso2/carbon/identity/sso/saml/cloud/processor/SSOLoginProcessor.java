@@ -145,16 +145,12 @@ public class SSOLoginProcessor extends IdentityProcessor {
                 builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
                 return builder;
             }
-            String relayState;
-//TODO : Fix Identity Request in framework
-            try {
-                relayState = identityRequest.getParameter(SAMLSSOConstants.RELAY_STATE);
-                if(StringUtils.isBlank(relayState)){
-                    relayState = messageContext.getRelayState();
-                }
-            } catch (NullPointerException e) {
+
+            String relayState = identityRequest.getParameter(SAMLSSOConstants.RELAY_STATE);
+            if (StringUtils.isBlank(relayState)) {
                 relayState = messageContext.getRelayState();
             }
+
 
 //            if (identityRequest.getParameter(SAMLSSOConstants.RELAY_STATE) != null) {
 //                relayState = identityRequest.getParameter(SAMLSSOConstants.RELAY_STATE);

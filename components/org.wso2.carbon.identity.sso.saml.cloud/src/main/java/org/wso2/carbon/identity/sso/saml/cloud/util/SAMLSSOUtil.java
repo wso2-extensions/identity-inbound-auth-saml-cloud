@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.sso.saml.cloud.util;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -380,10 +381,14 @@ public class SAMLSSOUtil {
 
     public static String getParameterFromQueryString(String queryString, String paraName) throws
             UnsupportedEncodingException {
-        String[] params = queryString.split("&");
-        for (String param : params) {
-            if (StringUtils.equals(param.split("=")[0], paraName)) {
-                return URLDecoder.decode(param.split("=")[1], StandardCharsets.UTF_8.name());
+        if(StringUtils.isNotBlank(queryString)) {
+            String[] params = queryString.split("&");
+            if (!ArrayUtils.isEmpty(params)) {
+                for (String param : params) {
+                    if (StringUtils.equals(param.split("=")[0], paraName)) {
+                        return URLDecoder.decode(param.split("=")[1], StandardCharsets.UTF_8.name());
+                    }
+                }
             }
         }
         return null;

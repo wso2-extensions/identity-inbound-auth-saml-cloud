@@ -58,7 +58,7 @@ public class SalesForceConfigs extends AbstractInboundAuthenticatorConfig {
         issuer.setDefaultValue("https://saml.salesforce.com");
 
         Property appType = new Property();
-        appType.setName("wellknownAppType");
+        appType.setName(IdentityConstants.ServerConfig.WELLKNOWN_APPLICATION_TYPE);
         appType.setType("hidden");
         appType.setValue(getConfigName());
         appType.setDisplayName("UI Config Type");
