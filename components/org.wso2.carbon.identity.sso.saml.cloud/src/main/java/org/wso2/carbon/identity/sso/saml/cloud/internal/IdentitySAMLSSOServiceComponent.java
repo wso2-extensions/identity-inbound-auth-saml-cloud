@@ -27,10 +27,17 @@ import org.wso2.carbon.identity.application.authentication.framework.inbound.Htt
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityProcessor;
 import org.wso2.carbon.identity.application.mgt.AbstractInboundAuthenticatorConfig;
 import org.wso2.carbon.identity.base.IdentityConstants;
+import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.core.util.IdentityIOStreamUtils;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SSOServiceProviderConfigManager;
 import org.wso2.carbon.identity.sso.saml.cloud.configs.SalesForceConfigs;
+import org.wso2.carbon.identity.sso.saml.cloud.handler.auth.IDPInitAuthHandler;
+import org.wso2.carbon.identity.sso.saml.cloud.handler.auth.SPInitAuthHandler;
+import org.wso2.carbon.identity.sso.saml.cloud.handler.validator.IDPInitSAMLValidator;
+import org.wso2.carbon.identity.sso.saml.cloud.handler.validator.SAMLValidator;
+import org.wso2.carbon.identity.sso.saml.cloud.handler.validator.SPInitSAMLValidator;
+import org.wso2.carbon.identity.sso.saml.cloud.processor.IDPInitAuthnRequestProcessor;
 import org.wso2.carbon.identity.sso.saml.cloud.processor.SSOLoginProcessor;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdentityRequestFactory;
 import org.wso2.carbon.identity.sso.saml.cloud.response.HttpSAMLResponseFactory;
@@ -74,6 +81,7 @@ import java.util.Scanner;
  */
 public class IdentitySAMLSSOServiceComponent {
 
+
     private static Log log = LogFactory.getLog(IdentitySAMLSSOServiceComponent.class);
     private static int defaultSingleLogoutRetryCount = 5;
 
@@ -94,9 +102,27 @@ public class IdentitySAMLSSOServiceComponent {
                 SAMLIdentityRequestFactory(), null);
         ctxt.getBundleContext().registerService(HttpIdentityResponseFactory.class.getName(), new
                 HttpSAMLResponseFactory(), null);
+        ctxt.getBundleContext().registerService(IdentityProcessor.class.getName(), new IDPInitAuthnRequestProcessor()
+                , null);
         ctxt.getBundleContext().registerService(IdentityProcessor.class.getName(), new SPInitSSOAuthnRequestProcessor
                 (), null);
         ctxt.getBundleContext().registerService(IdentityProcessor.class.getName(), new SSOLoginProcessor(), null);
+        SPInitSAMLValidator spInitSAMLValidator = new SPInitSAMLValidator();
+        IdentitySAMLSSOServiceComponentHolder.getInstance().getSamlValidators().add(spInitSAMLValidator);
+        ctxt.getBundleContext().registerService(AbstractIdentityHandler.class.getName(), spInitSAMLValidator, null);
+
+        IDPInitSAMLValidator idpInitSAMLValidator = new IDPInitSAMLValidator();
+        IdentitySAMLSSOServiceComponentHolder.getInstance().getSamlValidators().add(idpInitSAMLValidator);
+        ctxt.getBundleContext().registerService(AbstractIdentityHandler.class.getName(), idpInitSAMLValidator, null);
+
+        IDPInitAuthHandler idpInitAuthHandler = new IDPInitAuthHandler();
+        IdentitySAMLSSOServiceComponentHolder.getInstance().getAuthHandlers().add(idpInitAuthHandler);
+        ctxt.getBundleContext().registerService(AbstractIdentityHandler.class.getName(), idpInitAuthHandler, null);
+
+        SPInitAuthHandler spInitAuthHandler = new SPInitAuthHandler();
+        IdentitySAMLSSOServiceComponentHolder.getInstance().getAuthHandlers().add(spInitAuthHandler);
+        ctxt.getBundleContext().registerService(AbstractIdentityHandler.class.getName(), spInitAuthHandler, null);
+
         SalesForceConfigs salesforce = new SalesForceConfigs();
         Hashtable<String, String> props = new Hashtable<String, String>();
         ctxt.getBundleContext().registerService(AbstractInboundAuthenticatorConfig.class, salesforce, props);

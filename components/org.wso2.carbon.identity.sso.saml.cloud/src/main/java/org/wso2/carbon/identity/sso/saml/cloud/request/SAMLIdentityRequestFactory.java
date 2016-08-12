@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.FrameworkClientException;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.HttpIdentityRequestFactory;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.HttpIdentityResponse;
+import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityRequest;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.exception.SAML2ClientException;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
@@ -39,6 +40,7 @@ import java.util.Map;
 public class SAMLIdentityRequestFactory extends HttpIdentityRequestFactory {
 
     private static Log log = LogFactory.getLog(SAMLIdentityRequestFactory.class);
+
     @Override
     public String getName() {
         return "SAMLIdentityRequestFactory";
@@ -46,7 +48,10 @@ public class SAMLIdentityRequestFactory extends HttpIdentityRequestFactory {
 
     @Override
     public boolean canHandle(HttpServletRequest request, HttpServletResponse response) {
-        if(StringUtils.isNotBlank(request.getParameter(SAMLSSOConstants.SAML_REQUEST))){
+        String samlRequest = request.getParameter(SAMLSSOConstants.SAML_REQUEST);
+        String spEntityID = request.getParameter(SAMLSSOConstants.QueryParameter.SP_ENTITY_ID.toString());
+        String slo = request.getParameter(SAMLSSOConstants.QueryParameter.SLO.toString());
+        if (StringUtils.isNotBlank(samlRequest) || StringUtils.isNotBlank(spEntityID) || StringUtils.isNotBlank(slo)) {
             return true;
         }
         return false;
@@ -58,15 +63,25 @@ public class SAMLIdentityRequestFactory extends HttpIdentityRequestFactory {
     }
 
     @Override
-    public SAMLIdentityRequest.SAMLIdentityRequestBuilder create(HttpServletRequest request,
+    public IdentityRequest.IdentityRequestBuilder create(HttpServletRequest request,
                                                          HttpServletResponse response) throws SAML2ClientException {
+        String samlRequest = request.getParameter(SAMLSSOConstants.SAML_REQUEST);
+        String spEntityID = request.getParameter(SAMLSSOConstants.QueryParameter.SP_ENTITY_ID.toString());
+        String slo = request.getParameter(SAMLSSOConstants.QueryParameter.SLO.toString());
+        IdentityRequest.IdentityRequestBuilder builder;
+        if (spEntityID != null || slo != null) {
+            builder = new SAMLIdpInitRequest.SAMLIdpInitRequestBuilder();
+        } else if (samlRequest != null) {
+            builder = new SAMLSpInitRequest.SAMLSpInitRequestBuilder
+                    (request, response);
+        } else {
+            throw SAML2ClientException.error("Invalid request message or single logout message");
+        }
 
-        SAMLIdentityRequest.SAMLIdentityRequestBuilder builder = new SAMLIdentityRequest.SAMLIdentityRequestBuilder
-                (request, response);
         try {
             super.create(builder, request, response);
         } catch (FrameworkClientException e) {
-            throw SAML2ClientException.error("Error occurred while creating the Identity Request Builder",e);
+            throw SAML2ClientException.error("Error occurred while creating the Identity Request", e);
         }
         return builder;
     }
@@ -76,32 +91,32 @@ public class SAMLIdentityRequestFactory extends HttpIdentityRequestFactory {
                                                                             HttpServletRequest request,
                                                                             HttpServletResponse response) {
 
-            HttpIdentityResponse.HttpIdentityResponseBuilder builder = new HttpIdentityResponse
-                    .HttpIdentityResponseBuilder();
-            String redirectURL = SAMLSSOUtil.getNotificationEndpoint();
-            Map<String, String[]> queryParams = new HashMap();
-            //TODO Send status codes rather than full messages in the GET request
-            try {
-                queryParams.put(SAMLSSOConstants.STATUS, new String[]{URLEncoder.encode(((SAML2ClientException)
-                        exception).getExceptionStatus(), StandardCharsets.UTF_8.name())});
-                queryParams.put(SAMLSSOConstants.STATUS_MSG, new String[]{URLEncoder.encode(((SAML2ClientException)
-                        exception).getExceptionMessage(), StandardCharsets.UTF_8.name())});
-                if (exception.getMessage() != null) {
-                    queryParams.put(SAMLSSOConstants.SAML_RESP, new String[]{URLEncoder.encode(exception.getMessage()
-                            , StandardCharsets.UTF_8.name())});
-                }
-                if (((SAML2ClientException) exception).getACSUrl() != null) {
-                    queryParams.put(SAMLSSOConstants.ASSRTN_CONSUMER_URL, new String[]{URLEncoder.encode((
-                            (SAML2ClientException) exception).getACSUrl(), StandardCharsets.UTF_8.name())});
-                }
-                builder.setParameters(queryParams);
-            } catch (UnsupportedEncodingException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Error while encoding query parameters.");
-                }
+        HttpIdentityResponse.HttpIdentityResponseBuilder builder = new HttpIdentityResponse
+                .HttpIdentityResponseBuilder();
+        String redirectURL = SAMLSSOUtil.getNotificationEndpoint();
+        Map<String, String[]> queryParams = new HashMap();
+        //TODO Send status codes rather than full messages in the GET request
+        try {
+            queryParams.put(SAMLSSOConstants.STATUS, new String[]{URLEncoder.encode(((SAML2ClientException)
+                    exception).getExceptionStatus(), StandardCharsets.UTF_8.name())});
+            queryParams.put(SAMLSSOConstants.STATUS_MSG, new String[]{URLEncoder.encode(((SAML2ClientException)
+                    exception).getExceptionMessage(), StandardCharsets.UTF_8.name())});
+            if (exception.getMessage() != null) {
+                queryParams.put(SAMLSSOConstants.SAML_RESP, new String[]{URLEncoder.encode(exception.getMessage()
+                        , StandardCharsets.UTF_8.name())});
             }
-            builder.setRedirectURL(redirectURL);
-            builder.setStatusCode(HttpServletResponse.SC_MOVED_TEMPORARILY);
-            return builder;
+            if (((SAML2ClientException) exception).getACSUrl() != null) {
+                queryParams.put(SAMLSSOConstants.ASSRTN_CONSUMER_URL, new String[]{URLEncoder.encode((
+                        (SAML2ClientException) exception).getACSUrl(), StandardCharsets.UTF_8.name())});
+            }
+            builder.setParameters(queryParams);
+        } catch (UnsupportedEncodingException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Error while encoding query parameters.", e);
+            }
+        }
+        builder.setRedirectURL(redirectURL);
+        builder.setStatusCode(HttpServletResponse.SC_MOVED_TEMPORARILY);
+        return builder;
     }
 }

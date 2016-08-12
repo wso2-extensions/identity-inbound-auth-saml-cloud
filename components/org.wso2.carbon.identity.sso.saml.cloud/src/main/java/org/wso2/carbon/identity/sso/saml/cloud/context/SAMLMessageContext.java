@@ -25,6 +25,8 @@ import org.wso2.carbon.identity.application.authentication.framework.model.Authe
 import org.wso2.carbon.identity.core.model.SAMLSSOServiceProviderDO;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdentityRequest;
+import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdpInitRequest;
+import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLSpInitRequest;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.io.Serializable;
@@ -50,8 +52,6 @@ public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable
     private String subject;
     private String tenantDomain;
     private int attributeConsumingServiceIndex;
-    private boolean isIdpInitSSO;
-    private boolean isStratosDeployment;
     private SAMLSSOServiceProviderDO samlssoServiceProviderDO;
 
     public SAMLMessageContext(SAMLIdentityRequest request, Map<T1, T2> parameters) {
@@ -64,16 +64,18 @@ public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable
     }
 
     public String getDestination() {
-        return this.authnRequest.getDestination();
+        if (!isIdpInitSSO() && this.authnRequest != null) {
+            return this.authnRequest.getDestination();
+        } else if (isIdpInitSSO()) {
+            return ((SAMLIdpInitRequest) this.getRequest()).getAcs();
+        }
+        return null;
     }
 
     public boolean isIdpInitSSO() {
-        return isIdpInitSSO;
+        return this.getRequest() instanceof  SAMLIdpInitRequest;
     }
 
-    public void setIdpInitSSO(boolean idpInitSSO) {
-        this.isIdpInitSSO = idpInitSSO;
-    }
 
     public AuthnRequest getAuthnRequest() {
         return authnRequest;
@@ -93,10 +95,6 @@ public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable
 
     public void setValid(boolean isValid) {
         this.isValid = isValid;
-    }
-
-    public String getQueryString() {
-        return this.getRequest().getQueryString();
     }
 
     public String getIssuer() {
@@ -128,13 +126,19 @@ public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable
     }
 
     public String getId() {
-        return this.authnRequest.getID();
+        if(!isIdpInitSSO() && this.authnRequest != null) {
+            return this.authnRequest.getID();
+        }
+        return null;
     }
 
     public String getAssertionConsumerURL() {
-        return this.authnRequest.getAssertionConsumerServiceURL();
+        if(!isIdpInitSSO() && this.authnRequest != null) {
+            return this.authnRequest.getAssertionConsumerServiceURL();
+        } else {
+            return samlssoServiceProviderDO.getDefaultAssertionConsumerUrl();
+        }
     }
-
 
     public String getTenantDomain() {
         return tenantDomain;
@@ -156,14 +160,6 @@ public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable
         this.subject = subject;
     }
 
-    public boolean isForceAuthn() {
-        return this.authnRequest.isForceAuthn();
-    }
-
-    public boolean isPassive() {
-        return this.authnRequest.isPassive();
-    }
-
     /**
      *
      * @return AuthenticationResult saved in the messageContext
@@ -182,13 +178,5 @@ public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable
 
     public void setSamlssoServiceProviderDO(SAMLSSOServiceProviderDO samlssoServiceProviderDO) {
         this.samlssoServiceProviderDO = samlssoServiceProviderDO;
-    }
-
-    public boolean isStratosDeployment() {
-        return isStratosDeployment;
-    }
-
-    public void setStratosDeployment(boolean isStratosDeployment) {
-        this.isStratosDeployment = isStratosDeployment;
     }
 }
