@@ -31,6 +31,7 @@ import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.core.util.IdentityIOStreamUtils;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SSOServiceProviderConfigManager;
+import org.wso2.carbon.identity.sso.saml.cloud.configs.AmazonConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.configs.SalesForceConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.auth.IDPInitAuthHandler;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.auth.SPInitAuthHandler;
@@ -84,9 +85,7 @@ public class IdentitySAMLSSOServiceComponent {
 
     private static Log log = LogFactory.getLog(IdentitySAMLSSOServiceComponent.class);
     private static int defaultSingleLogoutRetryCount = 5;
-
     private static long defaultSingleLogoutRetryInterval = 60000;
-
     private SPInitSSOAuthnRequestProcessor authnRequestProcessor;
     private SAMLIdentityRequestFactory samlRequestFactory;
     private static String ssoRedirectPage = null;
@@ -126,9 +125,14 @@ public class IdentitySAMLSSOServiceComponent {
         SalesForceConfigs salesforce = new SalesForceConfigs();
         Hashtable<String, String> props = new Hashtable<String, String>();
         ctxt.getBundleContext().registerService(AbstractInboundAuthenticatorConfig.class, salesforce, props);
+
         SAMLAuthenticatorConfigs samlconfig = new SAMLAuthenticatorConfigs();
         Hashtable<String, String> samlprops = new Hashtable<String, String>();
         ctxt.getBundleContext().registerService(AbstractInboundAuthenticatorConfig.class, samlconfig, samlprops);
+
+        AmazonConfigs amazon = new AmazonConfigs();
+        Hashtable<String, String> amazprops = new Hashtable<String, String>();
+        ctxt.getBundleContext().registerService(AbstractInboundAuthenticatorConfig.class, amazon, amazprops);
 
         String redirectHtmlPath = null;
         FileInputStream fis = null;
@@ -139,26 +143,8 @@ public class IdentitySAMLSSOServiceComponent {
             SAMLSSOUtil.setSingleLogoutRetryInterval(Long.parseLong(IdentityUtil.getProperty(
                     IdentityConstants.ServerConfig.SINGLE_LOGOUT_RETRY_INTERVAL)));
 
-//            SAMLSSOUtil.setResponseBuilder(IdentityUtil.getProperty("SSOService.SAMLSSOResponseBuilder"));
-//            SAMLSSOUtil.setIdPInitSSOAuthnRequestValidator(IdentityUtil.getProperty("SSOService.IdPInitSSOAuthnRequestValidator"));
-//            SAMLSSOUtil.setSPInitSSOAuthnRequestProcessor(IdentityUtil.getProperty("SSOService.SPInitSSOAuthnRequestProcessor"));
-//            SAMLSSOUtil.setSPInitLogoutRequestProcessor(IdentityUtil.getProperty("SSOService.SPInitSSOAuthnRequestProcessor"));
-//            SAMLSSOUtil.setIdPInitLogoutRequestProcessor(IdentityUtil.getProperty("SSOService.IdPInitLogoutRequestProcessor"));
-//            SAMLSSOUtil.setIdPInitSSOAuthnRequestProcessor(IdentityUtil.getProperty("SSOService.IdPInitSSOAuthnRequestProcessor"));
 
             if (log.isDebugEnabled()) {
-//                log.debug("IdPInitSSOAuthnRequestValidator is set to " +
-//                        IdentityUtil.getProperty("SSOService.IdPInitSSOAuthnRequestValidator"));
-//                log.debug("SPInitSSOAuthnRequestValidator is set to " +
-//                        IdentityUtil.getProperty("SSOService.SPInitSSOAuthnRequestValidator"));
-//                log.debug("SPInitSSOAuthnRequestProcessor is set to " +
-//                        IdentityUtil.getProperty("SSOService.SPInitSSOAuthnRequestProcessor"));
-//                log.debug("SPInitLogoutRequestProcessor is set to " +
-//                        IdentityUtil.getProperty("SSOService.SPInitLogoutRequestProcessor"));
-//                log.debug("IdPInitLogoutRequestProcessor is set to " +
-//                        IdentityUtil.getProperty("SSOService.IdPInitLogoutRequestProcessor"));
-//                log.debug("IdPInitSSOAuthnRequestProcessor is set to " +
-//                        IdentityUtil.getProperty("SSOService.IdPInitSSOAuthnRequestProcessor"));
                 log.debug("Single logout retry count is set to " + SAMLSSOUtil.getSingleLogoutRetryCount());
                 log.debug("Single logout retry interval is set to " +
                         SAMLSSOUtil.getSingleLogoutRetryInterval() + " in seconds.");
@@ -171,8 +157,6 @@ public class IdentitySAMLSSOServiceComponent {
             if (log.isDebugEnabled()) {
                 log.debug("samlsso_response.html " + ssoRedirectPage);
             }
-
-//            FileBasedConfigManager.getInstance().addServiceProviders();
 
             if (log.isDebugEnabled()) {
                 log.debug("Identity SAML SSO bundle is activated");
