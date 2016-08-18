@@ -32,7 +32,11 @@ import org.wso2.carbon.identity.core.util.IdentityIOStreamUtils;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SSOServiceProviderConfigManager;
 import org.wso2.carbon.identity.sso.saml.cloud.configs.AmazonConfigs;
+import org.wso2.carbon.identity.sso.saml.cloud.configs.ConcurConfigs;
+import org.wso2.carbon.identity.sso.saml.cloud.configs.GoToMeetingConfigs;
+import org.wso2.carbon.identity.sso.saml.cloud.configs.NetSuiteConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.configs.SalesForceConfigs;
+import org.wso2.carbon.identity.sso.saml.cloud.configs.ZuoraConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.auth.IDPInitAuthHandler;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.auth.SPInitAuthHandler;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.validator.IDPInitSAMLValidator;
@@ -122,6 +126,22 @@ public class IdentitySAMLSSOServiceComponent {
         IdentitySAMLSSOServiceComponentHolder.getInstance().getAuthHandlers().add(spInitAuthHandler);
         ctxt.getBundleContext().registerService(AbstractIdentityHandler.class.getName(), spInitAuthHandler, null);
 
+        AmazonConfigs amazon = new AmazonConfigs();
+        Hashtable<String, String> amazonProps = new Hashtable<String, String>();
+        ctxt.getBundleContext().registerService(AbstractInboundAuthenticatorConfig.class, amazon, amazonProps);
+
+        ConcurConfigs concur = new ConcurConfigs();
+        Hashtable<String, String> concurProps = new Hashtable<String, String>();
+        ctxt.getBundleContext().registerService(AbstractInboundAuthenticatorConfig.class, concur, concurProps);
+
+        GoToMeetingConfigs gtm = new GoToMeetingConfigs();
+        Hashtable<String, String> gtmprops = new Hashtable<>();
+        ctxt.getBundleContext().registerService(AbstractInboundAuthenticatorConfig.class, gtm, gtmprops);
+
+        NetSuiteConfigs netsuite = new NetSuiteConfigs();
+        Hashtable<String, String> netsuiteprops = new Hashtable<>();
+        ctxt.getBundleContext().registerService(AbstractInboundAuthenticatorConfig.class, netsuite, netsuiteprops);
+
         SalesForceConfigs salesforce = new SalesForceConfigs();
         Hashtable<String, String> props = new Hashtable<String, String>();
         ctxt.getBundleContext().registerService(AbstractInboundAuthenticatorConfig.class, salesforce, props);
@@ -130,9 +150,9 @@ public class IdentitySAMLSSOServiceComponent {
         Hashtable<String, String> samlprops = new Hashtable<String, String>();
         ctxt.getBundleContext().registerService(AbstractInboundAuthenticatorConfig.class, samlconfig, samlprops);
 
-        AmazonConfigs amazon = new AmazonConfigs();
-        Hashtable<String, String> amazprops = new Hashtable<String, String>();
-        ctxt.getBundleContext().registerService(AbstractInboundAuthenticatorConfig.class, amazon, amazprops);
+        ZuoraConfigs zuora = new ZuoraConfigs();
+        Hashtable<String, String> zuraprops = new Hashtable<String, String>();
+        ctxt.getBundleContext().registerService(AbstractInboundAuthenticatorConfig.class, zuora, zuraprops);
 
         String redirectHtmlPath = null;
         FileInputStream fis = null;

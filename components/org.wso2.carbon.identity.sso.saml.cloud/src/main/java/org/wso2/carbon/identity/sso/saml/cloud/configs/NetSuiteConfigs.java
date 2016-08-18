@@ -1,23 +1,4 @@
-/*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
- *
- * WSO2 Inc. licenses this file to you under the Apache License,
- *  Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
 package org.wso2.carbon.identity.sso.saml.cloud.configs;
-
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,10 +9,9 @@ import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 
-public class AmazonConfigs extends AbstractInboundAuthenticatorConfig {
-
-    private static Log log = LogFactory.getLog(AmazonConfigs.class);
-
+public class NetSuiteConfigs extends AbstractInboundAuthenticatorConfig {
+    private static Log log = LogFactory.getLog(NetSuiteConfigs.class);
+    //This is the key
     @Override
     public String getAuthKey() {
         return null;
@@ -39,7 +19,7 @@ public class AmazonConfigs extends AbstractInboundAuthenticatorConfig {
 
     @Override
     public String getConfigName() {
-        return "aws";
+        return "netsuite";
     }
 
     //this is the authType
@@ -50,14 +30,14 @@ public class AmazonConfigs extends AbstractInboundAuthenticatorConfig {
 
     @Override
     public String getFriendlyName() {
-        return "Amazon";
+        return "NetSuite";
     }
 
     @Override
     public Property[] getConfigurationProperties() {
         Property issuer = new Property();
         issuer.setName(SAMLSSOConstants.SAMLFormFields.ISSUER);
-        issuer.setValue("https://signin.aws.amazon.com/saml");
+        issuer.setValue("http://www.netsuite.com/sp");
         issuer.setDisplayName("Issuer");
 
         Property appType = new Property();
@@ -68,18 +48,31 @@ public class AmazonConfigs extends AbstractInboundAuthenticatorConfig {
 
         Property acsurls = new Property();
         acsurls.setName(SAMLSSOConstants.SAMLFormFields.ACS_URLS);
-        acsurls.setValue("https://signin.aws.amazon.com/saml");
+        acsurls.setValue("https://system.netsuite.com/saml2/acs,https://system.na1.netsuite.com/saml2/acs,https://system.sandbox.netsuite.com/saml2/acs");
         acsurls.setDisplayName("Assertion Consumer URLs");
         acsurls.setDescription("The url where you should redirected after authenticated.");
 
+        Property acsindex = new Property();
+        acsindex.setName(SAMLSSOConstants.SAMLFormFields.ACS_INDEX);
+        acsindex.setDisplayName("Assertion Consumer Service Index");
+        try {
+            acsindex.setValue(Integer.toString(IdentityUtil.getRandomInteger()));
+        } catch (IdentityException e) {
+            log.error("Error occurred when generating attribute consumer service index.", e);
+        }
+
         Property defaultacs = new Property();
         defaultacs.setName(SAMLSSOConstants.SAMLFormFields.DEFAULT_ACS);
-        defaultacs.setValue("https://signin.aws.amazon.com/saml");
+        defaultacs.setValue("https://system.netsuite.com/saml2/acs");
         defaultacs.setDisplayName("Default Assertion Consumer URL");
 
         Property nameid = new Property();
         nameid.setName(SAMLSSOConstants.SAMLFormFields.NAME_ID_FORMAT);
         nameid.setDisplayName("NameID format ");
+
+        Property alias = new Property();
+        alias.setName(SAMLSSOConstants.SAMLFormFields.ALIAS);
+        alias.setDisplayName("Certificate Alias");
 
         Property signAlgo = new Property();
         signAlgo.setName(SAMLSSOConstants.SAMLFormFields.SIGN_ALGO);
@@ -96,10 +89,29 @@ public class AmazonConfigs extends AbstractInboundAuthenticatorConfig {
         enableSign.setDisplayName("Enable Response Signing");
         enableSign.setValue("false");
 
+        Property enableSigValidation = new Property();
+        enableSigValidation.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_SIGNATURE_VALIDATION);
+        enableSigValidation.setDisplayName("Enable Signature Validation in Authentication Requests and Logout " +
+                "Requests");
+        enableSigValidation.setValue("false");
+
         Property enableEncAssert = new Property();
         enableEncAssert.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_ENCRYPTION);
         enableEncAssert.setDisplayName("Enable Assertion Encryption ");
         enableEncAssert.setValue("false");
+
+        Property enableSLO = new Property();
+        enableSLO.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_SINGLE_LOGOUT);
+        enableSLO.setDisplayName("Enable Single Logout");
+        enableSLO.setValue("false");
+
+        Property sloUrl = new Property();
+        sloUrl.setName(SAMLSSOConstants.SAMLFormFields.SLO_RESPONSE_URL);
+        sloUrl.setDisplayName("SLO Response URL");
+
+        Property sloRequestURL = new Property();
+        sloRequestURL.setName(SAMLSSOConstants.SAMLFormFields.SLO_REQUEST_URL);
+        sloRequestURL.setDisplayName("SLO Request URL");
 
         Property enableAtrProf = new Property();
         enableAtrProf.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ATTR_PROF);
@@ -111,14 +123,23 @@ public class AmazonConfigs extends AbstractInboundAuthenticatorConfig {
         enableDefaultAtrProf.setDisplayName("Include Attributes in the Response Always ");
         enableDefaultAtrProf.setValue("true");
 
-        Property acsindex = new Property();
-        acsindex.setName(SAMLSSOConstants.SAMLFormFields.ACS_INDEX);
-        acsindex.setDisplayName("Assertion Consumer Service Index");
-        try {
-            acsindex.setValue(Integer.toString(IdentityUtil.getRandomInteger()));
-        } catch (IdentityException e) {
-            log.error("Error occurred when generating attribute consumer service index.", e);
-        }
+        Property enableAudienceRestriction = new Property();
+        enableAudienceRestriction.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_AUDIENCE_RESTRICTION);
+        enableAudienceRestriction.setDisplayName("Enable Audience Restriction ");
+        enableAudienceRestriction.setValue("false");
+
+        Property audiences = new Property();
+        audiences.setName(SAMLSSOConstants.SAMLFormFields.AUDIENCE_URLS);
+        audiences.setDisplayName("Audience URLs");
+
+        Property enableRecipients = new Property();
+        enableRecipients.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_RECIPIENTS);
+        enableRecipients.setDisplayName("Enable Recipient Validation ");
+        enableRecipients.setValue("false");
+
+        Property receipients = new Property();
+        receipients.setName(SAMLSSOConstants.SAMLFormFields.RECEIPIENT_URLS);
+        receipients.setDisplayName("Recipient URLs");
 
         Property enableIDPSSO = new Property();
         enableIDPSSO.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_IDP_INIT_SSO);
@@ -133,8 +154,10 @@ public class AmazonConfigs extends AbstractInboundAuthenticatorConfig {
         idpSLOUrls.setName(SAMLSSOConstants.SAMLFormFields.IDP_SLO_URLS);
         idpSLOUrls.setDisplayName("IDP SLO Urls");
 
-        return new Property[]{issuer, appType, acsurls, defaultacs, nameid, signAlgo, digestAlgo, enableSign,
-                enableEncAssert, enableAtrProf, acsindex, enableDefaultAtrProf, enableIDPSSO, enableIDPSLO, idpSLOUrls};
+        return new Property[]{issuer, appType, acsurls, acsindex, defaultacs, nameid, alias, signAlgo, digestAlgo,
+                enableSign, enableSigValidation, enableEncAssert, enableSLO, sloUrl, sloRequestURL, enableAtrProf,
+                enableDefaultAtrProf, enableAudienceRestriction, audiences, enableRecipients, receipients,
+                enableIDPSSO, enableIDPSLO, idpSLOUrls};
     }
 
     @Override
