@@ -26,7 +26,10 @@ import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 import org.wso2.carbon.identity.sso.saml.cloud.exception.SAML2ClientException;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdpInitRequest;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
+import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
+
+import java.io.IOException;
 
 
 public class IdPInitSSOAuthnRequestValidator implements SSOAuthnRequestValidator{
@@ -48,9 +51,8 @@ public class IdPInitSSOAuthnRequestValidator implements SSOAuthnRequestValidator
      * @return SAMLSSOSignInResponseDTO
      * @throws org.wso2.carbon.identity.base.IdentityException
      */
-    public boolean validate() throws IdentityException {
+    public boolean validate() throws IdentityException,IOException {
 
-        try {
 
             // spEntityID MUST NOT be null
             if (StringUtils.isNotBlank(spEntityID)) {
@@ -78,7 +80,13 @@ public class IdPInitSSOAuthnRequestValidator implements SSOAuthnRequestValidator
             }
 
             if (StringUtils.isBlank(SAMLSSOUtil.getTenantDomainFromThreadLocal())) {
-                SAMLSSOUtil.setTenantDomainInThreadLocal(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+                try {
+                    SAMLSSOUtil.setTenantDomainInThreadLocal(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+                } catch (UserStoreException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Error occured while setting tenant domain to thread local.", e);
+                    }
+                }
             }
 
             messageContext.setValid(true);
@@ -87,9 +95,6 @@ public class IdPInitSSOAuthnRequestValidator implements SSOAuthnRequestValidator
                 log.debug("IdP Initiated SSO request validation is successful");
             }
             return true;
-        } catch (Exception e) {
-            throw IdentityException.error("Error validating the IdP Initiated SSO request", e);
-        }
     }
 
 }

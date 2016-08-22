@@ -31,6 +31,7 @@ import org.wso2.carbon.identity.sso.saml.cloud.handler.validator.SAMLValidator;
 import org.wso2.carbon.identity.sso.saml.cloud.internal.IdentitySAMLSSOServiceComponentHolder;
 import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLResponse;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class HandlerManager {
             if (reqvalidator.canHandle(messageContext)) {
                 try {
                     return reqvalidator.validateRequest(messageContext);
-                } catch (IdentityException e) {
+                } catch (IdentityException | IOException e) {
                     throw new SAML2Exception("Authentication Request Validation Failed.", e);
                 }
             }
@@ -63,12 +64,16 @@ public class HandlerManager {
     }
 
     public SAMLResponse.SAMLResponseBuilder getResponse(SAMLMessageContext messageContext, AuthenticationResult
-            authnResult, IdentityRequest identityRequest) {
+            authnResult, IdentityRequest identityRequest) throws FrameworkException {
         List<AuthHandler> handlers = IdentitySAMLSSOServiceComponentHolder.getInstance().getAuthHandlers();
         Collections.sort(handlers,new HandlerComparator());
         for(AuthHandler authHandler : handlers){
             if(authHandler.canHandle(messageContext)){
-                return authHandler.validateAuthnResponseFromFramework(messageContext, authnResult, identityRequest);
+                try {
+                    return authHandler.validateAuthnResponseFromFramework(messageContext, authnResult, identityRequest);
+                }catch(IdentityException | IOException e) {
+                    throw new SAML2Exception("Authentication Request Validation Failed.", e);
+                }
             }
         }
         throw SAMLRuntimeException.error("Cannot find handler to validate the authentication response");

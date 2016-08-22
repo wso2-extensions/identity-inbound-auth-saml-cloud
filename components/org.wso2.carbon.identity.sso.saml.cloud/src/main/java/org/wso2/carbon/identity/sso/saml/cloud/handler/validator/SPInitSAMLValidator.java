@@ -27,6 +27,8 @@ import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.validators.SPInitSSOAuthnRequestValidator;
 import org.wso2.carbon.identity.sso.saml.cloud.validators.SSOAuthnRequestValidator;
 
+import java.io.IOException;
+
 public class SPInitSAMLValidator extends SAMLValidator {
 
     @Override
@@ -37,7 +39,7 @@ public class SPInitSAMLValidator extends SAMLValidator {
         return false;
     }
 
-    public boolean validateRequest(SAMLMessageContext messageContext) throws IdentityException {
+    public boolean validateRequest(SAMLMessageContext messageContext) throws IdentityException, IOException {
         SAMLSpInitRequest identityRequest = (SAMLSpInitRequest)messageContext.getRequest();
         String decodedRequest;
         if (identityRequest.isRedirect()) {

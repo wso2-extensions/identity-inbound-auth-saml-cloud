@@ -59,7 +59,8 @@ public class SPInitAuthHandler extends AuthHandler {
 
     public SAMLResponse.SAMLResponseBuilder validateAuthnResponseFromFramework(SAMLMessageContext messageContext,
                                                                                AuthenticationResult authnResult,
-                                                                               IdentityRequest identityRequest) {
+                                                                               IdentityRequest identityRequest)
+            throws IdentityException, IOException {
         AuthnRequest authnReq = messageContext.getAuthnRequest();
         SAMLResponse.SAMLResponseBuilder builder;
         if (authnResult == null || !authnResult.isAuthenticated()) {
@@ -71,49 +72,39 @@ public class SPInitAuthHandler extends AuthHandler {
             if (authnReq.isPassive()) { //if passive
 
                 String destination = authnReq.getAssertionConsumerServiceURL();
-                try {
-                    List<String> statusCodes = new ArrayList<String>();
-                    statusCodes.add(SAMLSSOConstants.StatusCodes.NO_PASSIVE);
-                    statusCodes.add(SAMLSSOConstants.StatusCodes.IDENTITY_PROVIDER_ERROR);
-                    String errorResponse = SAMLSSOUtil.buildErrorResponse(messageContext.getId(), statusCodes,
-                            "Cannot process response from framework Subject in Passive Mode", destination);
-                    builder = new SAMLLoginResponse.SAMLLoginResponseBuilder(messageContext);
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setRelayState(messageContext.getRelayState
-                            ());
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setRespString(errorResponse);
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setAcsUrl(messageContext
-                            .getAssertionConsumerURL());
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setSubject(messageContext.getSubject());
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setAuthenticatedIdPs(null);
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setTenantDomain(messageContext
-                            .getTenantDomain());
-                    return builder;
-                } catch (IdentityException e) {
-                    //TODO
-                    //Handle this exception
-                }
+                List<String> statusCodes = new ArrayList<String>();
+                statusCodes.add(SAMLSSOConstants.StatusCodes.NO_PASSIVE);
+                statusCodes.add(SAMLSSOConstants.StatusCodes.IDENTITY_PROVIDER_ERROR);
+                String errorResponse = SAMLSSOUtil.buildErrorResponse(messageContext.getId(), statusCodes,
+                        "Cannot process response from framework Subject in Passive Mode", destination);
+                builder = new SAMLLoginResponse.SAMLLoginResponseBuilder(messageContext);
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setRelayState(messageContext.getRelayState
+                        ());
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setRespString(errorResponse);
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setAcsUrl(messageContext
+                        .getAssertionConsumerURL());
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setSubject(messageContext.getSubject());
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setAuthenticatedIdPs(null);
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setTenantDomain(messageContext
+                        .getTenantDomain());
+                return builder;
+
             } else { // if forceAuthn or normal flow
-                //TODO send a saml response with a status message.
-                try {
-                    if (!authnResult.isAuthenticated()) {
-                        String destination = messageContext.getDestination();
-                        String errorResp = SAMLSSOUtil.buildErrorResponse(SAMLSSOConstants.StatusCodes.AUTHN_FAILURE,
-                                "User authentication failed", destination);
-                        builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
-                        ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(errorResp);
-                        ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setStatus(SAMLSSOConstants
-                                .Notification.EXCEPTION_STATUS);
-                        ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setMessageLog(SAMLSSOConstants
-                                .Notification.EXCEPTION_MESSAGE);
-                        ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setAcsUrl(authnReq
-                                .getAssertionConsumerServiceURL());
-                        return builder;
-                    } else {
-                        throw IdentityException.error("Session data is not found for authenticated user");
-                    }
-                }catch(IdentityException | IOException e){
-                    //TODO
-                    //Handle This exception
+                if (!authnResult.isAuthenticated()) {
+                    String destination = messageContext.getDestination();
+                    String errorResp = SAMLSSOUtil.buildErrorResponse(SAMLSSOConstants.StatusCodes.AUTHN_FAILURE,
+                            "User authentication failed", destination);
+                    builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
+                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(errorResp);
+                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setStatus(SAMLSSOConstants
+                            .Notification.EXCEPTION_STATUS);
+                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setMessageLog(SAMLSSOConstants
+                            .Notification.EXCEPTION_MESSAGE);
+                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setAcsUrl(authnReq
+                            .getAssertionConsumerServiceURL());
+                    return builder;
+                } else {
+                    throw IdentityException.error("Session data is not found for authenticated user");
                 }
             }
         } else {
@@ -133,34 +124,29 @@ public class SPInitAuthHandler extends AuthHandler {
                 relayState = messageContext.getRelayState();
             }
 
-            try {
-                builder = authenticate(messageContext, authnResult.isAuthenticated(), authnResult
-                        .getAuthenticatedAuthenticators(), SAMLSSOConstants.AuthnModes.USERNAME_PASSWORD);
-                if (builder instanceof SAMLLoginResponse.SAMLLoginResponseBuilder) { // authenticated
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setRelayState(relayState);
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setAcsUrl(messageContext
-                            .getAssertionConsumerURL());
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setSubject(messageContext.getUser()
-                            .getAuthenticatedSubjectIdentifier());
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setAuthenticatedIdPs(messageContext
-                            .getAuthenticationResult().getAuthenticatedIdPs());
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setTenantDomain(messageContext
-                            .getTenantDomain());
-                    return builder;
-                } else { // authentication FAILURE
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setStatus(SAMLSSOConstants
-                            .Notification.EXCEPTION_STATUS);
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setMessageLog(SAMLSSOConstants
-                            .Notification.EXCEPTION_MESSAGE);
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setAcsUrl(messageContext
-                            .getSamlssoServiceProviderDO().getDefaultAssertionConsumerUrl());
-                    return builder;
-                }
-            } catch (IdentityException e) {
-
+            builder = authenticate(messageContext, authnResult.isAuthenticated(), authnResult
+                    .getAuthenticatedAuthenticators(), SAMLSSOConstants.AuthnModes.USERNAME_PASSWORD);
+            if (builder instanceof SAMLLoginResponse.SAMLLoginResponseBuilder) { // authenticated
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setRelayState(relayState);
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setAcsUrl(messageContext
+                        .getAssertionConsumerURL());
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setSubject(messageContext.getUser()
+                        .getAuthenticatedSubjectIdentifier());
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setAuthenticatedIdPs(messageContext
+                        .getAuthenticationResult().getAuthenticatedIdPs());
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setTenantDomain(messageContext
+                        .getTenantDomain());
+                return builder;
+            } else { // authentication FAILURE
+                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setStatus(SAMLSSOConstants
+                        .Notification.EXCEPTION_STATUS);
+                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setMessageLog(SAMLSSOConstants
+                        .Notification.EXCEPTION_MESSAGE);
+                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setAcsUrl(messageContext
+                        .getSamlssoServiceProviderDO().getDefaultAssertionConsumerUrl());
+                return builder;
             }
         }
-        return null;
     }
 
     private SAMLResponse.SAMLResponseBuilder authenticate(SAMLMessageContext messageContext, boolean isAuthenticated,
@@ -168,94 +154,89 @@ public class SPInitAuthHandler extends AuthHandler {
             IdentityException {
         SAMLSSOServiceProviderDO serviceProviderConfigs = messageContext.getSamlssoServiceProviderDO();
         SAMLResponse.SAMLResponseBuilder builder;
-        try {
-            if (serviceProviderConfigs.isDoValidateSignatureInRequests()) {
-                List<String> idpUrlSet = SAMLSSOUtil.getDestinationFromTenantDomain(messageContext.getTenantDomain());
+        if (serviceProviderConfigs.isDoValidateSignatureInRequests()) {
+            List<String> idpUrlSet = SAMLSSOUtil.getDestinationFromTenantDomain(messageContext.getTenantDomain());
 
-                if (messageContext.getDestination() == null || !idpUrlSet.contains(messageContext.getDestination())) {
-                    String msg = "Destination validation for Authentication Request failed. " + "Received: [" +
-                            messageContext.getDestination() + "]." + " Expected one in the list: [" + StringUtils
-                            .join(idpUrlSet, ',') + "]";
-                    if (log.isDebugEnabled()) {
-                        log.debug(msg);
-                    }
-                    builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
-                            (messageContext.getId(), SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg, null));
-                    return builder;
-                }
-
-                // validate the signature
-                boolean isSignatureValid = validateAuthnRequestSignature(messageContext);
-
-                if (!isSignatureValid) {
-                    String msg = "Signature validation for Authentication Request failed.";
-                    if (log.isDebugEnabled()) {
-                        log.debug(msg);
-                    }
-                    builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
-                            (messageContext.getId(), SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg, null));
-                    return builder;
-                }
-            } else {
-                //Validate the assertion consumer url,  only if request is not signed.
-                String acsUrl = messageContext.getAssertionConsumerURL();
-                if (StringUtils.isBlank(acsUrl) || !serviceProviderConfigs.getAssertionConsumerUrlList().contains
-                        (acsUrl)) {
-                    String msg = "ALERT: Invalid Assertion Consumer URL value '" + acsUrl + "' in the " +
-                            "AuthnRequest message from  the issuer '" + serviceProviderConfigs.getIssuer() +
-                            "'. Possibly " + "an attempt for a spoofing attack";
-                    if (log.isDebugEnabled()) {
-                        log.debug(msg);
-                    }
-                    builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
-                            (messageContext.getId(), SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg, acsUrl));
-                    return builder;
-                }
-            }
-
-            // if subject is specified in AuthnRequest only that user should be allowed to logged-in
-            if (messageContext.getSubject() != null && messageContext.getUser() != null) {
-                String authenticatedSubjectIdentifier = messageContext.getUser().getAuthenticatedSubjectIdentifier();
-                if (authenticatedSubjectIdentifier != null && !authenticatedSubjectIdentifier.equals(messageContext
-                        .getSubject())) {
-                    String msg = "Provided username does not match with the requested subject";
-                    if (log.isDebugEnabled()) {
-                        log.debug(msg);
-                    }
-                    builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
-                            (messageContext.getId(), SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg,
-                                    serviceProviderConfigs.getDefaultAssertionConsumerUrl()));
-                    return builder;
-                }
-            }
-
-            // TODO persist the session
-
-
-            if (isAuthenticated) {
-                builder = new SAMLLoginResponse.SAMLLoginResponseBuilder(messageContext);
-                String respString = ((SAMLLoginResponse.SAMLLoginResponseBuilder)builder).buildResponse();
-
+            if (messageContext.getDestination() == null || !idpUrlSet.contains(messageContext.getDestination())) {
+                String msg = "Destination validation for Authentication Request failed. " + "Received: [" +
+                        messageContext.getDestination() + "]." + " Expected one in the list: [" + StringUtils
+                        .join(idpUrlSet, ',') + "]";
                 if (log.isDebugEnabled()) {
-                    log.debug("Authentication successfully processed. The SAMLResponse is :" + respString);
+                    log.debug(msg);
                 }
+                builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
+                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
+                        (messageContext.getId(), SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg, null));
                 return builder;
             }
 
-        } catch (Exception e) {
-            log.error("Error processing the authentication request", e);
+            // validate the signature
+            boolean isSignatureValid = validateAuthnRequestSignature(messageContext);
+
+            if (!isSignatureValid) {
+                String msg = "Signature validation for Authentication Request failed.";
+                if (log.isDebugEnabled()) {
+                    log.debug(msg);
+                }
+                builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
+                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
+                        (messageContext.getId(), SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg, null));
+                return builder;
+            }
+        } else {
+            //Validate the assertion consumer url,  only if request is not signed.
+            String acsUrl = messageContext.getAssertionConsumerURL();
+            if (StringUtils.isBlank(acsUrl) || !serviceProviderConfigs.getAssertionConsumerUrlList().contains
+                    (acsUrl)) {
+                String msg = "ALERT: Invalid Assertion Consumer URL value '" + acsUrl + "' in the " +
+                        "AuthnRequest message from  the issuer '" + serviceProviderConfigs.getIssuer() +
+                        "'. Possibly " + "an attempt for a spoofing attack";
+                if (log.isDebugEnabled()) {
+                    log.debug(msg);
+                }
+                builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
+                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
+                        (messageContext.getId(), SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg, acsUrl));
+                return builder;
+            }
+        }
+
+        // if subject is specified in AuthnRequest only that user should be allowed to logged-in
+        if (messageContext.getSubject() != null && messageContext.getUser() != null) {
+            String authenticatedSubjectIdentifier = messageContext.getUser().getAuthenticatedSubjectIdentifier();
+            if (authenticatedSubjectIdentifier != null && !authenticatedSubjectIdentifier.equals(messageContext
+                    .getSubject())) {
+                String msg = "Provided username does not match with the requested subject";
+                if (log.isDebugEnabled()) {
+                    log.debug(msg);
+                }
+                builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
+                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
+                        (messageContext.getId(), SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg,
+                                serviceProviderConfigs.getDefaultAssertionConsumerUrl()));
+                return builder;
+            }
+        }
+        // TODO persist the session
+        if (isAuthenticated) {
+            builder = new SAMLLoginResponse.SAMLLoginResponseBuilder(messageContext);
+            String respString = ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).buildResponse();
+
+            if (log.isDebugEnabled()) {
+                log.debug("Authentication successfully processed. The SAMLResponse is :" + respString);
+            }
+            return builder;
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Error processing the authentication request");
+            }
+
             builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
             ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
                     (messageContext.getId(), SAMLSSOConstants.StatusCodes
                             .AUTHN_FAILURE, "Authentication Failure, invalid username or password.", null));
             return builder;
         }
-
-        return null;
     }
 
     /**

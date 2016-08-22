@@ -26,6 +26,8 @@ import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.validators.IdPInitSSOAuthnRequestValidator;
 import org.wso2.carbon.identity.sso.saml.cloud.validators.SSOAuthnRequestValidator;
 
+import java.io.IOException;
+
 public class IDPInitSAMLValidator extends SAMLValidator {
 
     @Override
@@ -36,7 +38,7 @@ public class IDPInitSAMLValidator extends SAMLValidator {
         return false;
     }
 
-    public boolean validateRequest(SAMLMessageContext messageContext) throws IdentityException {
+    public boolean validateRequest(SAMLMessageContext messageContext) throws IdentityException, IOException {
         if(!((SAMLIdpInitRequest)messageContext.getRequest()).isLogout()){
             messageContext.setTenantDomain(SAMLSSOUtil.getTenantDomainFromThreadLocal());
             return new IdPInitSSOAuthnRequestValidator(messageContext).validate();

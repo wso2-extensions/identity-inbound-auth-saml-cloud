@@ -23,6 +23,8 @@ import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 
+import java.io.IOException;
+
 public abstract class SAMLValidator extends AbstractIdentityHandler {
 
     public abstract boolean canHandle(SAMLMessageContext messageContext);
@@ -33,5 +35,5 @@ public abstract class SAMLValidator extends AbstractIdentityHandler {
      * @param messageContext
      * @return
      */
-    public abstract boolean validateRequest(SAMLMessageContext messageContext) throws IdentityException;
+    public abstract boolean validateRequest(SAMLMessageContext messageContext) throws IdentityException, IOException;
 }

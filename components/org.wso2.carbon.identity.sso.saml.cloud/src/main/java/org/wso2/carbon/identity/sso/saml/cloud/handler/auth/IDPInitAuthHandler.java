@@ -54,7 +54,7 @@ public class IDPInitAuthHandler extends AuthHandler {
 
     public SAMLResponse.SAMLResponseBuilder validateAuthnResponseFromFramework(SAMLMessageContext messageContext,
                                                                                AuthenticationResult authnResult,
-                                                                               IdentityRequest identityRequest) {
+                                                                               IdentityRequest identityRequest)throws IdentityException,IOException{
 
         SAMLResponse.SAMLResponseBuilder builder;
         if (authnResult == null || !authnResult.isAuthenticated()) {
@@ -62,27 +62,22 @@ public class IDPInitAuthHandler extends AuthHandler {
             if (log.isDebugEnabled() && authnResult != null) {
                 log.debug("Unauthenticated User.");
             }
-            //TODO send a saml response with a status message.
-            try {
-                if (!authnResult.isAuthenticated()) {
-                    String destination = messageContext.getDestination();
-                    String errorResp = SAMLSSOUtil.buildErrorResponse(SAMLSSOConstants.StatusCodes.AUTHN_FAILURE,
-                            "User authentication failed", destination);
-                    builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(errorResp);
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setStatus(SAMLSSOConstants
-                            .Notification.EXCEPTION_STATUS);
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setMessageLog(SAMLSSOConstants
-                            .Notification.EXCEPTION_MESSAGE);
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setAcsUrl(((SAMLIdpInitRequest)
-                            messageContext.getRequest()).getAcs());
-                    return builder;
-                } else {
-                    throw IdentityException.error("Session data is not found for authenticated user");
-                }
-            } catch (IdentityException | IOException e) {
-                //TODO
-                //Handle This exception
+
+            if (!authnResult.isAuthenticated()) {
+                String destination = messageContext.getDestination();
+                String errorResp = SAMLSSOUtil.buildErrorResponse(SAMLSSOConstants.StatusCodes.AUTHN_FAILURE,
+                        "User authentication failed", destination);
+                builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
+                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(errorResp);
+                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setStatus(SAMLSSOConstants
+                        .Notification.EXCEPTION_STATUS);
+                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setMessageLog(SAMLSSOConstants
+                        .Notification.EXCEPTION_MESSAGE);
+                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setAcsUrl(((SAMLIdpInitRequest)
+                        messageContext.getRequest()).getAcs());
+                return builder;
+            } else {
+                throw IdentityException.error("Session data is not found for authenticated user");
             }
 
         } else {
@@ -103,34 +98,30 @@ public class IDPInitAuthHandler extends AuthHandler {
                 relayState = messageContext.getRelayState();
             }
 
-            try {
-                builder = authenticate(messageContext, authnResult.isAuthenticated(), authnResult
-                        .getAuthenticatedAuthenticators(), SAMLSSOConstants.AuthnModes.USERNAME_PASSWORD);
-                if (builder instanceof SAMLLoginResponse.SAMLLoginResponseBuilder) { // authenticated
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setRelayState(relayState);
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setAcsUrl(messageContext
-                            .getAssertionConsumerURL());
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setSubject(messageContext.getUser()
-                            .getAuthenticatedSubjectIdentifier());
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setAuthenticatedIdPs(messageContext
-                            .getAuthenticationResult().getAuthenticatedIdPs());
-                    ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setTenantDomain(messageContext
-                            .getTenantDomain());
-                    return builder;
-                } else { // authentication FAILURE
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setStatus(SAMLSSOConstants
-                            .Notification.EXCEPTION_STATUS);
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setMessageLog(SAMLSSOConstants
-                            .Notification.EXCEPTION_MESSAGE);
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setAcsUrl(messageContext
-                            .getSamlssoServiceProviderDO().getDefaultAssertionConsumerUrl());
-                    return builder;
-                }
-            } catch (IdentityException e) {
-
+            builder = authenticate(messageContext, authnResult.isAuthenticated(), authnResult
+                    .getAuthenticatedAuthenticators(), SAMLSSOConstants.AuthnModes.USERNAME_PASSWORD);
+            if (builder instanceof SAMLLoginResponse.SAMLLoginResponseBuilder) { // authenticated
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setRelayState(relayState);
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setAcsUrl(messageContext
+                        .getAssertionConsumerURL());
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setSubject(messageContext.getUser()
+                        .getAuthenticatedSubjectIdentifier());
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setAuthenticatedIdPs(messageContext
+                        .getAuthenticationResult().getAuthenticatedIdPs());
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setTenantDomain(messageContext
+                        .getTenantDomain());
+                return builder;
+            } else { // authentication FAILURE
+                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setStatus(SAMLSSOConstants
+                        .Notification.EXCEPTION_STATUS);
+                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setMessageLog(SAMLSSOConstants
+                        .Notification.EXCEPTION_MESSAGE);
+                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setAcsUrl(messageContext
+                        .getSamlssoServiceProviderDO().getDefaultAssertionConsumerUrl());
+                return builder;
             }
+
         }
-        return null;
     }
 
     private SAMLResponse.SAMLResponseBuilder authenticate(SAMLMessageContext messageContext, boolean isAuthenticated,
@@ -140,77 +131,76 @@ public class IDPInitAuthHandler extends AuthHandler {
         SAMLSSOServiceProviderDO serviceProviderConfigs = SAMLSSOUtil.getServiceProviderConfig(messageContext);
         messageContext.setSamlssoServiceProviderDO(serviceProviderConfigs);
         SAMLResponse.SAMLResponseBuilder builder;
-        try {
 
-            if (serviceProviderConfigs == null) {
-                String msg = "A Service Provider with the Issuer '" + messageContext.getIssuer() + "' is not " +
-                        "registered." + " Service Provider should be registered in advance.";
-                if (log.isDebugEnabled()) {
-                    log.debug(msg);
-                }
-                builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
-                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
-                        (null, SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg, null));
-                return builder;
+        if (serviceProviderConfigs == null) {
+            String msg = "A Service Provider with the Issuer '" + messageContext.getIssuer() + "' is not " +
+                    "registered." + " Service Provider should be registered in advance.";
+            if (log.isDebugEnabled()) {
+                log.debug(msg);
             }
+            builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
+            ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
+                    (null, SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg, null));
+            return builder;
+        }
 
-            if (!serviceProviderConfigs.isIdPInitSSOEnabled()) {
-                String msg = "IdP initiated SSO not enabled for service provider '" + messageContext.getIssuer() + "'.";
-                if (log.isDebugEnabled()) {
-                    log.debug(msg);
-                }
-                builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
-                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
-                        (null, SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg, null));
-                return builder;
+        if (!serviceProviderConfigs.isIdPInitSSOEnabled()) {
+            String msg = "IdP initiated SSO not enabled for service provider '" + messageContext.getIssuer() + "'.";
+            if (log.isDebugEnabled()) {
+                log.debug(msg);
             }
+            builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
+            ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
+                    (null, SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg, null));
+            return builder;
+        }
 
-            if (serviceProviderConfigs.isEnableAttributesByDefault() && serviceProviderConfigs
-                    .getAttributeConsumingServiceIndex() != null) {
-                messageContext.setAttributeConsumingServiceIndex(Integer.parseInt(serviceProviderConfigs
-                        .getAttributeConsumingServiceIndex()));
+        if (serviceProviderConfigs.isEnableAttributesByDefault() && serviceProviderConfigs
+                .getAttributeConsumingServiceIndex() != null) {
+            messageContext.setAttributeConsumingServiceIndex(Integer.parseInt(serviceProviderConfigs
+                    .getAttributeConsumingServiceIndex()));
+        }
+
+
+        String acsUrl = StringUtils.isNotBlank(((SAMLIdpInitRequest) messageContext.getRequest()).getAcs()) ? (
+                (SAMLIdpInitRequest) messageContext.getRequest()).getAcs() : serviceProviderConfigs
+                .getDefaultAssertionConsumerUrl();
+        if (StringUtils.isBlank(acsUrl) || !serviceProviderConfigs.getAssertionConsumerUrlList().contains
+                (acsUrl)) {
+            String msg = "ALERT: Invalid Assertion Consumer URL value '" + acsUrl + "' in the " +
+                    "AuthnRequest message from  the issuer '" + serviceProviderConfigs.getIssuer() +
+                    "'. Possibly " + "an attempt for a spoofing attack";
+            if (log.isDebugEnabled()) {
+                log.debug(msg);
             }
+            builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
+            ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
+                    (null, SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg, acsUrl));
+            ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setAcsUrl(acsUrl);
+            return builder;
+        }
+        // TODO : persist the session
+        if (isAuthenticated) {
+            builder = new SAMLLoginResponse.SAMLLoginResponseBuilder(messageContext);
+            String respString = ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).buildResponse();
 
-
-            String acsUrl = StringUtils.isNotBlank(((SAMLIdpInitRequest) messageContext.getRequest()).getAcs()) ? (
-                    (SAMLIdpInitRequest) messageContext.getRequest()).getAcs() : serviceProviderConfigs
-                    .getDefaultAssertionConsumerUrl();
-            if (StringUtils.isBlank(acsUrl) || !serviceProviderConfigs.getAssertionConsumerUrlList().contains
-                    (acsUrl)) {
-                String msg = "ALERT: Invalid Assertion Consumer URL value '" + acsUrl + "' in the " +
-                        "AuthnRequest message from  the issuer '" + serviceProviderConfigs.getIssuer() +
-                        "'. Possibly " + "an attempt for a spoofing attack";
-                if (log.isDebugEnabled()) {
-                    log.debug(msg);
-                }
-                builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
-                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
-                        (null, SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg, acsUrl));
-                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setAcsUrl(acsUrl);
-                return builder;
+            if (log.isDebugEnabled()) {
+                log.debug("Authentication successfully processed. The SAMLResponse is :" + respString);
             }
-            // TODO : persist the session
-            if (isAuthenticated) {
-                builder = new SAMLLoginResponse.SAMLLoginResponseBuilder(messageContext);
-                String respString = ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).buildResponse();
-
-                if (log.isDebugEnabled()) {
-                    log.debug("Authentication successfully processed. The SAMLResponse is :" + respString);
-                }
-                return builder;
-            }
-        } catch (Exception e) {
+            return builder;
+        } else {
             List<String> statusCodes = new ArrayList<String>();
             statusCodes.add(SAMLSSOConstants.StatusCodes.AUTHN_FAILURE);
             statusCodes.add(SAMLSSOConstants.StatusCodes.IDENTITY_PROVIDER_ERROR);
-            log.error("Error processing the authentication request", e);
+            if (log.isDebugEnabled()) {
+                log.debug("Error processing the authentication request.");
+            }
             builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
             ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(SAMLSSOUtil.buildErrorResponse
-                            (null, statusCodes, "Authentication Failure, invalid username or password.", null));
+                    (null, statusCodes, "Authentication Failure, invalid username or password.", null));
             ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setAcsUrl(serviceProviderConfigs.getLoginPageURL());
             return builder;
         }
-        return null;
     }
 
     /**
