@@ -18,7 +18,6 @@
 
 package org.wso2.carbon.identity.sso.saml.cloud.configs;
 
-import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.identity.application.common.model.Property;
 import org.wso2.carbon.identity.application.mgt.AbstractInboundAuthenticatorConfig;
 import org.wso2.carbon.identity.base.IdentityConstants;
@@ -46,7 +45,7 @@ public class SalesForceConfigs extends AbstractInboundAuthenticatorConfig {
 
     @Override
     public String getFriendlyName() {
-        return "salesforce";
+        return "Salesforce";
     }
 
     @Override
@@ -92,23 +91,23 @@ public class SalesForceConfigs extends AbstractInboundAuthenticatorConfig {
         Property signAlgo = new Property();
         signAlgo.setName(SAMLSSOConstants.SAMLFormFields.SIGN_ALGO);
         signAlgo.setDisplayName("Response Signing Algorithm ");
-        signAlgo.setValue("http://www.w3.org/2000/09/xmldsig#dsa-sha1");
+        signAlgo.setValue("http://www.w3.org/2000/09/xmldsig#rsa-sha1");
 
         Property digestAlgo = new Property();
         digestAlgo.setName(SAMLSSOConstants.SAMLFormFields.DIGEST_ALGO);
         digestAlgo.setDisplayName("Response Digest Algorithm ");
-        digestAlgo.setValue("http://www.w3.org/2001/04/xmldsig-more#md5");
+        digestAlgo.setValue("http://www.w3.org/2000/09/xmldsig#sha1");
 
         Property enableSign = new Property();
         enableSign.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_RESPONSE_SIGNING);
         enableSign.setDisplayName("Enable Response Signing");
-        enableSign.setValue("false");
+        enableSign.setValue("true");
 
         Property enableSigValidation = new Property();
         enableSigValidation.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_SIGNATURE_VALIDATION);
         enableSigValidation.setDisplayName("Enable Signature Validation in Authentication Requests and Logout " +
                 "Requests");
-        enableSigValidation.setValue("false");
+        enableSigValidation.setValue("true");
 
         Property enableEncAssert = new Property();
         enableEncAssert.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_ENCRYPTION);

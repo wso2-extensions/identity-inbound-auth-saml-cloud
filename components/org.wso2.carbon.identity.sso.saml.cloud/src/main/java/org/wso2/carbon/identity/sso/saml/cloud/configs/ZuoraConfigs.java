@@ -15,6 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.wso2.carbon.identity.sso.saml.cloud.configs;
 
 import org.apache.commons.logging.Log;
@@ -22,13 +23,11 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.common.model.Property;
 import org.wso2.carbon.identity.application.mgt.AbstractInboundAuthenticatorConfig;
 import org.wso2.carbon.identity.base.IdentityConstants;
-import org.wso2.carbon.identity.base.IdentityException;
-import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 
-public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig {
+public class ZuoraConfigs extends AbstractInboundAuthenticatorConfig {
 
-    private static Log log = LogFactory.getLog(SAMLAuthenticatorConfigs.class);
+    private static Log log = LogFactory.getLog(ZuoraConfigs.class);
     //This is the key
     @Override
     public String getAuthKey() {
@@ -37,7 +36,7 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
 
     @Override
     public String getConfigName() {
-        return SAMLSSOConstants.SAMLFormFields.CUSTOM;
+        return "zuora";
     }
 
     //this is the authType
@@ -48,13 +47,14 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
 
     @Override
     public String getFriendlyName() {
-        return "SAML";
+        return "Zuora";
     }
 
     @Override
     public Property[] getConfigurationProperties() {
         Property issuer = new Property();
         issuer.setName(SAMLSSOConstants.SAMLFormFields.ISSUER);
+        issuer.setValue("www.zuora.com");
         issuer.setDisplayName("Issuer");
 
         Property appType = new Property();
@@ -65,20 +65,14 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
 
         Property acsurls = new Property();
         acsurls.setName(SAMLSSOConstants.SAMLFormFields.ACS_URLS);
+        acsurls.setValue("https://www.zuora.com/apps/saml/SSO/alias/defaultAlias,https://apisandbox.zuora" +
+                ".com/apps/saml/SSO/alias/defaultAlias");
         acsurls.setDisplayName("Assertion Consumer URLs");
         acsurls.setDescription("The url where you should redirected after authenticated.");
 
-        Property acsindex = new Property();
-        acsindex.setName(SAMLSSOConstants.SAMLFormFields.ACS_INDEX);
-        acsindex.setDisplayName("Assertion Consumer Service Index");
-        try {
-            acsindex.setValue(Integer.toString(IdentityUtil.getRandomInteger()));
-        } catch (IdentityException e) {
-            log.error("Error occurred when generating attribute consumer service index.", e);
-        }
-
         Property defaultacs = new Property();
         defaultacs.setName(SAMLSSOConstants.SAMLFormFields.DEFAULT_ACS);
+        defaultacs.setValue("https://www.zuora.com/apps/saml/SSO/alias/defaultAlias");
         defaultacs.setDisplayName("Default Assertion Consumer URL");
 
         Property nameid = new Property();
@@ -115,29 +109,6 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
         enableEncAssert.setDisplayName("Enable Assertion Encryption ");
         enableEncAssert.setValue("false");
 
-        Property enableSLO = new Property();
-        enableSLO.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_SINGLE_LOGOUT);
-        enableSLO.setDisplayName("Enable Single Logout");
-        enableSLO.setValue("false");
-
-        Property sloUrl = new Property();
-        sloUrl.setName(SAMLSSOConstants.SAMLFormFields.SLO_RESPONSE_URL);
-        sloUrl.setDisplayName("SLO Response URL");
-
-        Property sloRequestURL = new Property();
-        sloRequestURL.setName(SAMLSSOConstants.SAMLFormFields.SLO_REQUEST_URL);
-        sloRequestURL.setDisplayName("SLO Request URL");
-
-        Property enableAtrProf = new Property();
-        enableAtrProf.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ATTR_PROF);
-        enableAtrProf.setDisplayName("Enable Attribute Profile ");
-        enableAtrProf.setValue("false");
-
-        Property enableDefaultAtrProf = new Property();
-        enableDefaultAtrProf.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_DEFAULT_ATTR_PROF);
-        enableDefaultAtrProf.setDisplayName("Include Attributes in the Response Always ");
-        enableDefaultAtrProf.setValue("false");
-
         Property enableAudienceRestriction = new Property();
         enableAudienceRestriction.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_AUDIENCE_RESTRICTION);
         enableAudienceRestriction.setDisplayName("Enable Audience Restriction ");
@@ -158,6 +129,7 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
 
         Property enableIDPSSO = new Property();
         enableIDPSSO.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_IDP_INIT_SSO);
+        enableIDPSSO.setValue("true");
         enableIDPSSO.setDisplayName("Enable IdP Initiated SSO ");
 
         Property enableIDPSLO = new Property();
@@ -168,9 +140,8 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
         idpSLOUrls.setName(SAMLSSOConstants.SAMLFormFields.IDP_SLO_URLS);
         idpSLOUrls.setDisplayName("IDP SLO Urls");
 
-        return new Property[]{issuer, appType, acsurls, acsindex, defaultacs, nameid, alias, signAlgo, digestAlgo,
-                enableSign, enableSigValidation, enableEncAssert, enableSLO, sloUrl, sloRequestURL, enableAtrProf,
-                enableDefaultAtrProf, enableAudienceRestriction, audiences, enableRecipients, receipients,
+        return new Property[]{issuer, appType, acsurls, defaultacs, nameid, alias, signAlgo, digestAlgo,
+                enableSign, enableSigValidation, enableEncAssert, enableAudienceRestriction, audiences, enableRecipients, receipients,
                 enableIDPSSO, enableIDPSLO, idpSLOUrls};
     }
 

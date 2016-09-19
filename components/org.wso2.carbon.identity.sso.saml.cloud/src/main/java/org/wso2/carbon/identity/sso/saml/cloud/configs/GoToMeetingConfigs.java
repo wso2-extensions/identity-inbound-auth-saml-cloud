@@ -15,6 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.wso2.carbon.identity.sso.saml.cloud.configs;
 
 import org.apache.commons.logging.Log;
@@ -26,10 +27,10 @@ import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 
-public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig {
+public class GoToMeetingConfigs extends AbstractInboundAuthenticatorConfig {
 
-    private static Log log = LogFactory.getLog(SAMLAuthenticatorConfigs.class);
-    //This is the key
+    private static Log log = LogFactory.getLog(AmazonConfigs.class);
+
     @Override
     public String getAuthKey() {
         return null;
@@ -37,7 +38,7 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
 
     @Override
     public String getConfigName() {
-        return SAMLSSOConstants.SAMLFormFields.CUSTOM;
+        return "gotomeeting";
     }
 
     //this is the authType
@@ -48,13 +49,14 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
 
     @Override
     public String getFriendlyName() {
-        return "SAML";
+        return "GoToMeeting";
     }
 
     @Override
     public Property[] getConfigurationProperties() {
         Property issuer = new Property();
         issuer.setName(SAMLSSOConstants.SAMLFormFields.ISSUER);
+        issuer.setValue("https://login.citrixonline.com/saml/sp");
         issuer.setDisplayName("Issuer");
 
         Property appType = new Property();
@@ -65,6 +67,10 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
 
         Property acsurls = new Property();
         acsurls.setName(SAMLSSOConstants.SAMLFormFields.ACS_URLS);
+        acsurls.setValue("https://login.citrixonline.com/saml/global.gotomeeting.com/acs,https://login.citrixonline" +
+                ".com/saml/acs,https://login.citrixonline.com/saml/global.gotowebinar.com/acs,https://login" +
+                ".citrixonline.com/saml/global.gototraining.com/acs,https://login.citrixonline.com/saml/global" +
+                ".openvoice.com/acs,https://login.citrixonline.com/saml/app.gotoassist.com/acs");
         acsurls.setDisplayName("Assertion Consumer URLs");
         acsurls.setDescription("The url where you should redirected after authenticated.");
 
@@ -79,6 +85,7 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
 
         Property defaultacs = new Property();
         defaultacs.setName(SAMLSSOConstants.SAMLFormFields.DEFAULT_ACS);
+        defaultacs.setValue("https://login.citrixonline.com/saml/global.gotomeeting.com/acs");
         defaultacs.setDisplayName("Default Assertion Consumer URL");
 
         Property nameid = new Property();
@@ -118,7 +125,7 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
         Property enableSLO = new Property();
         enableSLO.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_SINGLE_LOGOUT);
         enableSLO.setDisplayName("Enable Single Logout");
-        enableSLO.setValue("false");
+        enableSLO.setValue("true");
 
         Property sloUrl = new Property();
         sloUrl.setName(SAMLSSOConstants.SAMLFormFields.SLO_RESPONSE_URL);
@@ -126,6 +133,7 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
 
         Property sloRequestURL = new Property();
         sloRequestURL.setName(SAMLSSOConstants.SAMLFormFields.SLO_REQUEST_URL);
+        sloRequestURL.setValue("https://login.citrixonline.com/saml/SingleLogout");
         sloRequestURL.setDisplayName("SLO Request URL");
 
         Property enableAtrProf = new Property();
@@ -179,3 +187,4 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
         return SAMLSSOConstants.SAMLFormFields.ISSUER;
     }
 }
+

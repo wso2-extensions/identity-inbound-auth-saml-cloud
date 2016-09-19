@@ -30,7 +30,8 @@ import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
-import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdentityRequest;
+import org.wso2.carbon.identity.sso.saml.cloud.handler.HandlerManager;
+import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLSpInitRequest;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.validators.SSOAuthnRequestValidator;
 
@@ -39,7 +40,7 @@ import org.opensaml.xml.XMLObject;
 import java.util.HashMap;
 
 public class SPInitSSOAuthnRequestProcessor extends IdentityProcessor {
-    private static Log log = LogFactory.getLog(SPInitSSOAuthnRequestProcessor.class);
+
     private String relyingParty;
 
     @Override
@@ -64,7 +65,7 @@ public class SPInitSSOAuthnRequestProcessor extends IdentityProcessor {
 
     @Override
     public boolean canHandle(IdentityRequest identityRequest) {
-        if (identityRequest instanceof SAMLIdentityRequest && ((SAMLIdentityRequest) identityRequest).getSamlRequest
+        if (identityRequest instanceof SAMLSpInitRequest && ((SAMLSpInitRequest) identityRequest).getSamlRequest
                 () != null) {
             return true;
         }
@@ -74,36 +75,10 @@ public class SPInitSSOAuthnRequestProcessor extends IdentityProcessor {
     @Override
     public FrameworkLoginResponse.FrameworkLoginResponseBuilder process(IdentityRequest identityRequest) throws
             FrameworkException {
-        SAMLMessageContext messageContext = new SAMLMessageContext((SAMLIdentityRequest) identityRequest, new
+        SAMLMessageContext messageContext = new SAMLMessageContext((SAMLSpInitRequest) identityRequest, new
                 HashMap<String, String>());
-        try {
-            validateSPInitSSORequest(messageContext);
-        } catch (IdentityException e) {
-            throw new FrameworkException("Error while building SAML Response.");
-        }
-        FrameworkLoginResponse.FrameworkLoginResponseBuilder builder = buildResponseForFrameworkLogin(messageContext);
-        return builder;
-    }
-
-
-    protected boolean validateSPInitSSORequest(SAMLMessageContext messageContext) throws IdentityException {
-        SAMLIdentityRequest identityRequest = messageContext.getRequest();
-        String decodedRequest;
-        if (identityRequest.isRedirect()) {
-            decodedRequest = SAMLSSOUtil.decode(identityRequest.getSamlRequest());
-        } else {
-            decodedRequest = SAMLSSOUtil.decodeForPost(identityRequest.getSamlRequest());
-        }
-        XMLObject request = SAMLSSOUtil.unmarshall(decodedRequest);
-        if (request instanceof AuthnRequest) {
-            messageContext.setIdpInitSSO(false);
-            messageContext.setAuthnRequest((AuthnRequest) request);
-            messageContext.setTenantDomain(SAMLSSOUtil.getTenantDomainFromThreadLocal());
-            this.relyingParty = ((AuthnRequest) request).getIssuer().getValue();
-            //messageContext.setRpSessionId(identityRequest.getParameter(MultitenantConstants.SSO_AUTH_SESSION_ID));
-            SSOAuthnRequestValidator reqValidator = SAMLSSOUtil.getSPInitSSOAuthnRequestValidator(messageContext);
-            return reqValidator.validate();
-        }
-        return false;
+        HandlerManager.getInstance().validateRequest(messageContext);
+        this.relyingParty = messageContext.getIssuer();
+        return buildResponseForFrameworkLogin(messageContext);
     }
 }

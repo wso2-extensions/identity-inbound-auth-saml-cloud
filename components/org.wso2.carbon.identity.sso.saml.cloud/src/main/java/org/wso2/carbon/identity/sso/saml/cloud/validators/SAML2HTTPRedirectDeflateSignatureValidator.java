@@ -39,7 +39,7 @@ import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.sso.saml.cloud.builders.X509CredentialImpl;
 import org.wso2.carbon.identity.sso.saml.cloud.exception.IdentitySAML2SSOException;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
-import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdentityRequest;
+import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLSpInitRequest;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -105,7 +105,7 @@ public class SAML2HTTPRedirectDeflateSignatureValidator implements SAML2HTTPRedi
      * @return
      * @throws SecurityPolicyException
      */
-    protected static byte[] getSignedContent(SAMLIdentityRequest request) throws SecurityPolicyException {
+    protected static byte[] getSignedContent(SAMLSpInitRequest request) throws SecurityPolicyException {
         // We need the raw non-URL-decoded query string param values for
         // HTTP-Redirect DEFLATE simple signature
         // validation.
@@ -200,7 +200,7 @@ public class SAML2HTTPRedirectDeflateSignatureValidator implements SAML2HTTPRedi
      * @throws IdentitySAML2SSOException
      */
     @Override
-    public boolean validateSignature(SAMLIdentityRequest request, String issuer, String alias,
+    public boolean validateSignature(SAMLSpInitRequest request, String issuer, String alias,
                                      String domainName) throws SecurityException,
             IdentitySAML2SSOException {
         byte[] signature = getSignature(request.getSignature());

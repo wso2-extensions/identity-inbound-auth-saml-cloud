@@ -110,9 +110,8 @@ public class SAMLLoginResponse extends SAMLResponse {
         public String buildResponse() throws IdentityException {
             SAMLMessageContext messageContext = (SAMLMessageContext)this.context;
             SAMLSSOServiceProviderDO serviceProviderDO = messageContext.getSamlssoServiceProviderDO();
-            AuthnRequest request = messageContext.getAuthnRequest();
             if (log.isDebugEnabled()) {
-                log.debug("Building SAML Response for the consumer '" + request.getAssertionConsumerServiceURL() + "'");
+                log.debug("Building SAML Response for the consumer '" + messageContext.getAssertionConsumerURL() + "'");
             }
             Response response = new org.opensaml.saml2.core.impl.ResponseBuilder().buildObject();
             response.setIssuer(SAMLSSOUtil.getIssuer());
@@ -120,7 +119,7 @@ public class SAMLLoginResponse extends SAMLResponse {
            if (!messageContext.isIdpInitSSO()) {
                 response.setInResponseTo(messageContext.getId());
             }
-            response.setDestination(request.getAssertionConsumerServiceURL());
+            response.setDestination(messageContext.getAssertionConsumerURL());
             response.setStatus(buildStatus(SAMLSSOConstants.StatusCodes.SUCCESS_CODE, null));
             response.setVersion(SAMLVersion.VERSION_20);
             DateTime issueInstant = new DateTime();

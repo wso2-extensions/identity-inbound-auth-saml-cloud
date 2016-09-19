@@ -15,25 +15,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.identity.sso.saml.cloud.validators;
+package org.wso2.carbon.identity.sso.saml.cloud.handler.validator;
 
+
+import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticationResult;
 import org.wso2.carbon.identity.base.IdentityException;
+import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
+import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 
 import java.io.IOException;
 
-/**
- * Interface to implement in order to validate a received SAML SSO request
- * Implementation class should be defined in <>identity.xml</> under <>SSOService</> element as
- * <IdPInitSSOAuthnRequestValidator></IdPInitSSOAuthnRequestValidator> for IDP initiated authentication request flow,
- * <SPInitSSOAuthnRequestValidator></SPInitSSOAuthnRequestValidator> for SP initiated authentication request flow.
- */
-public interface SSOAuthnRequestValidator {
+public abstract class SAMLValidator extends AbstractIdentityHandler {
+
+    public abstract boolean canHandle(SAMLMessageContext messageContext);
 
     /**
-     * Validates the authentication request according to SAML SSO Web Browser Specification
+     * Validate whether the authentication request is valid or not
      *
-     * @return boolean : includes whether the request is validated
-     * @throws IdentityException
+     * @param messageContext
+     * @return
      */
-    boolean validate() throws IdentityException, IOException;
+    public abstract boolean validateRequest(SAMLMessageContext messageContext) throws IdentityException, IOException;
 }

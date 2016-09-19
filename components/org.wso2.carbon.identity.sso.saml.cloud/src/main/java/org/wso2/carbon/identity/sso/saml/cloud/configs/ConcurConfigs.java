@@ -15,6 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.wso2.carbon.identity.sso.saml.cloud.configs;
 
 import org.apache.commons.logging.Log;
@@ -26,8 +27,7 @@ import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 
-public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig {
-
+public class ConcurConfigs extends AbstractInboundAuthenticatorConfig {
     private static Log log = LogFactory.getLog(SAMLAuthenticatorConfigs.class);
     //This is the key
     @Override
@@ -37,7 +37,7 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
 
     @Override
     public String getConfigName() {
-        return SAMLSSOConstants.SAMLFormFields.CUSTOM;
+        return "concur";
     }
 
     //this is the authType
@@ -48,13 +48,14 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
 
     @Override
     public String getFriendlyName() {
-        return "SAML";
+        return "Concur";
     }
 
     @Override
     public Property[] getConfigurationProperties() {
         Property issuer = new Property();
         issuer.setName(SAMLSSOConstants.SAMLFormFields.ISSUER);
+        issuer.setValue("https://www.concursolutions.com");
         issuer.setDisplayName("Issuer");
 
         Property appType = new Property();
@@ -65,6 +66,7 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
 
         Property acsurls = new Property();
         acsurls.setName(SAMLSSOConstants.SAMLFormFields.ACS_URLS);
+        acsurls.setValue("https://www.concursolutions.com/SAMLRedirector/ClientSAMLLogin.aspx");
         acsurls.setDisplayName("Assertion Consumer URLs");
         acsurls.setDescription("The url where you should redirected after authenticated.");
 
@@ -79,10 +81,12 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
 
         Property defaultacs = new Property();
         defaultacs.setName(SAMLSSOConstants.SAMLFormFields.DEFAULT_ACS);
+        defaultacs.setValue("https://www.concursolutions.com/SAMLRedirector/ClientSAMLLogin.aspx");
         defaultacs.setDisplayName("Default Assertion Consumer URL");
 
         Property nameid = new Property();
         nameid.setName(SAMLSSOConstants.SAMLFormFields.NAME_ID_FORMAT);
+        nameid.setValue("urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
         nameid.setDisplayName("NameID format ");
 
         Property alias = new Property();
@@ -136,12 +140,12 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
         Property enableDefaultAtrProf = new Property();
         enableDefaultAtrProf.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_DEFAULT_ATTR_PROF);
         enableDefaultAtrProf.setDisplayName("Include Attributes in the Response Always ");
-        enableDefaultAtrProf.setValue("false");
+        enableDefaultAtrProf.setValue("true");
 
         Property enableAudienceRestriction = new Property();
         enableAudienceRestriction.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_AUDIENCE_RESTRICTION);
         enableAudienceRestriction.setDisplayName("Enable Audience Restriction ");
-        enableAudienceRestriction.setValue("false");
+        enableAudienceRestriction.setValue("true");
 
         Property audiences = new Property();
         audiences.setName(SAMLSSOConstants.SAMLFormFields.AUDIENCE_URLS);
@@ -158,6 +162,7 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
 
         Property enableIDPSSO = new Property();
         enableIDPSSO.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_IDP_INIT_SSO);
+        enableIDPSSO.setValue("true");
         enableIDPSSO.setDisplayName("Enable IdP Initiated SSO ");
 
         Property enableIDPSLO = new Property();

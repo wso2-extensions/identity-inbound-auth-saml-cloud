@@ -18,43 +18,38 @@
 
 package org.wso2.carbon.identity.sso.saml.cloud.processor;
 
-import org.apache.commons.lang.StringUtils;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.opensaml.saml2.core.AuthnRequest;
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
+import org.wso2.carbon.identity.application.authentication.framework.inbound.FrameworkLoginResponse;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityMessageContext;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityProcessor;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityRequest;
-import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticationResult;
 import org.wso2.carbon.identity.base.IdentityException;
-import org.wso2.carbon.identity.core.model.SAMLSSOServiceProviderDO;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.HandlerManager;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdpInitRequest;
-import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLResponse;
-import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLSpInitRequest;
-import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLErrorResponse;
-import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLLoginResponse;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
-import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.identity.sso.saml.cloud.validators.IdPInitSSOAuthnRequestValidator;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
-public class SSOLoginProcessor extends IdentityProcessor {
-    private static Log log = LogFactory.getLog(SSOLoginProcessor.class);
+public class IDPInitAuthnRequestProcessor extends IdentityProcessor {
+
+    private static Log log = LogFactory.getLog(IDPInitAuthnRequestProcessor.class);
+    private String relyingParty;
 
     @Override
     public String getName() {
-        return "SSOLoginProcessor";
+        return SAMLSSOConstants.SAMLFormFields.SAML_SSO;
     }
 
+    @Override
     public int getPriority() {
-        return 1;
+        return 4;
     }
 
     @Override
@@ -63,27 +58,25 @@ public class SSOLoginProcessor extends IdentityProcessor {
     }
 
     @Override
+    public String getRelyingPartyId() {
+        return this.relyingParty;
+    }
+
+    @Override
     public boolean canHandle(IdentityRequest identityRequest) {
-        IdentityMessageContext context = getContextIfAvailable(identityRequest);
-        if (context != null) {
-            if (context.getRequest() instanceof SAMLSpInitRequest || context.getRequest() instanceof
-                    SAMLIdpInitRequest) {
-                return true;
-            }
+        if (identityRequest instanceof SAMLIdpInitRequest) {
+            return true;
         }
         return false;
     }
 
     @Override
-    public SAMLResponse.SAMLResponseBuilder process(IdentityRequest identityRequest) throws FrameworkException {
-
-        SAMLMessageContext messageContext = (SAMLMessageContext) getContextIfAvailable(identityRequest);
-        AuthenticationResult authnResult = processResponseFromFrameworkLogin(messageContext, identityRequest);
-        return HandlerManager.getInstance().getResponse(messageContext,authnResult,identityRequest);
-    }
-
-    @Override
-    public String getRelyingPartyId() {
-        return null;
+    public FrameworkLoginResponse.FrameworkLoginResponseBuilder process(IdentityRequest identityRequest) throws
+            FrameworkException {
+        SAMLMessageContext messageContext = new SAMLMessageContext((SAMLIdpInitRequest) identityRequest, new
+                HashMap<String, String>());
+        HandlerManager.getInstance().validateRequest(messageContext);
+        this.relyingParty = messageContext.getIssuer();
+        return buildResponseForFrameworkLogin(messageContext);
     }
 }
