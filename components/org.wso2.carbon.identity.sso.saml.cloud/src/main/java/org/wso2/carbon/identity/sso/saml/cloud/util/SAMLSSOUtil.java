@@ -570,8 +570,8 @@ public class SAMLSSOUtil {
                     .asList(properties.get(SAMLSSOConstants.SAMLFormFields.ACS_URLS).getValue().split
                             (SAMLSSOConstants.SAMLFormFields.ACS_SEPERATE_CHAR)).contains(requestedACSUrl)) {
                 String msg = "ALERT: Invalid Assertion Consumer URL value '" + requestedACSUrl + "' in the " +
-                        "AuthnRequest message from  the issuer '" + properties.get(SAMLSSOConstants.SAMLFormFields
-                        .ISSUER).getValue() + "'. Possibly " + "an attempt for a spoofing attack";
+                        "AuthnRequest message from  the issuer '" + issuerName + "'. Possibly " + "an attempt for a " +
+                        "spoofing attack";
                 log.error(msg);
                 return false;
             } else {
@@ -615,11 +615,13 @@ public class SAMLSSOUtil {
             ApplicationManagementService appInfo = ApplicationManagementService.getInstance();
             ServiceProvider application = appInfo.getServiceProviderByClientId(issuerName, SAMLSSOConstants
                     .SAMLFormFields.SAML_SSO, tenantDomain);
-            for (InboundAuthenticationRequestConfig config : application.getInboundAuthenticationConfig()
-                    .getInboundAuthenticationRequestConfigs()) {
-                if (StringUtils.equals(config.getInboundAuthKey(), issuerName) && StringUtils.equals(config
-                        .getInboundAuthType(), SAMLSSOConstants.SAMLFormFields.SAML_SSO)) {
-                    return true;
+            if (application != null) {
+                for (InboundAuthenticationRequestConfig config : application.getInboundAuthenticationConfig()
+                        .getInboundAuthenticationRequestConfigs()) {
+                    if (StringUtils.equals(config.getInboundAuthKey(), issuerName) && StringUtils.equals(config
+                            .getInboundAuthType(), SAMLSSOConstants.SAMLFormFields.SAML_SSO)) {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -1105,7 +1107,13 @@ public class SAMLSSOUtil {
                         for (Property prop : config.getProperties()) {
                             properties.put(prop.getName(), prop);
                         }
-                        ssoIdpConfigs.setIssuer(properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER).getValue());
+                        if (properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER) != null && StringUtils
+                                .isNotBlank(properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER).getValue())) {
+                            ssoIdpConfigs.setIssuer(properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER).getValue());
+                        } else {
+                            throw IdentityException.error("No Issuer provided for service provider " +
+                                    serviceProvider.getApplicationName());
+                        }
                         if (properties.get(SAMLSSOConstants.SAMLFormFields.ACS_URLS) != null && StringUtils
                                 .isNotBlank(properties.get(SAMLSSOConstants.SAMLFormFields.ACS_URLS).getValue())) {
                             ssoIdpConfigs.setAssertionConsumerUrls(properties.get(SAMLSSOConstants.SAMLFormFields
