@@ -17,7 +17,8 @@
  */
 package org.wso2.carbon.identity.sso.saml.cloud.handler.validator;
 
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.opensaml.saml2.core.AuthnRequest;
 import org.opensaml.xml.XMLObject;
 import org.wso2.carbon.identity.base.IdentityException;
@@ -26,10 +27,13 @@ import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLSpInitRequest;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.validators.SPInitSSOAuthnRequestValidator;
 import org.wso2.carbon.identity.sso.saml.cloud.validators.SSOAuthnRequestValidator;
+import org.wso2.carbon.user.api.UserStoreException;
 
 import java.io.IOException;
 
 public class SPInitSAMLValidator extends SAMLValidator {
+
+    private static final Log log = LogFactory.getLog(SPInitSAMLValidator.class);
 
     @Override
     public boolean canHandle(SAMLMessageContext messageContext) {
@@ -50,7 +54,12 @@ public class SPInitSAMLValidator extends SAMLValidator {
         XMLObject request = SAMLSSOUtil.unmarshall(decodedRequest);
         if (request instanceof AuthnRequest) {
             messageContext.setAuthnRequest((AuthnRequest) request);
-            messageContext.setTenantDomain(SAMLSSOUtil.getTenantDomainFromThreadLocal());
+            messageContext.setTenantDomain(messageContext.getRequest().getTenantDomain());
+            try {
+                SAMLSSOUtil.setTenantDomainInThreadLocal(messageContext.getRequest().getTenantDomain());
+            } catch (UserStoreException e) {
+                log.error("Error occurred while setting tenant domain to thread local.");
+            }
             SSOAuthnRequestValidator reqValidator = new SPInitSSOAuthnRequestValidator(messageContext);
             return reqValidator.validate();
         }
