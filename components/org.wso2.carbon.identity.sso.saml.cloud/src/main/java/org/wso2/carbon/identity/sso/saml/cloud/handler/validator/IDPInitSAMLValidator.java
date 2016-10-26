@@ -17,18 +17,20 @@
  */
 package org.wso2.carbon.identity.sso.saml.cloud.handler.validator;
 
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdpInitRequest;
-import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLSpInitRequest;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.validators.IdPInitSSOAuthnRequestValidator;
-import org.wso2.carbon.identity.sso.saml.cloud.validators.SSOAuthnRequestValidator;
+import org.wso2.carbon.user.api.UserStoreException;
 
 import java.io.IOException;
 
 public class IDPInitSAMLValidator extends SAMLValidator {
+
+    private static final Log log = LogFactory.getLog(IDPInitSAMLValidator.class);
 
     @Override
     public boolean canHandle(SAMLMessageContext messageContext) {
@@ -40,7 +42,12 @@ public class IDPInitSAMLValidator extends SAMLValidator {
 
     public boolean validateRequest(SAMLMessageContext messageContext) throws IdentityException, IOException {
         if(!((SAMLIdpInitRequest)messageContext.getRequest()).isLogout()){
-            messageContext.setTenantDomain(SAMLSSOUtil.getTenantDomainFromThreadLocal());
+            messageContext.setTenantDomain(messageContext.getRequest().getTenantDomain());
+            try {
+                SAMLSSOUtil.setTenantDomainInThreadLocal(messageContext.getRequest().getTenantDomain());
+            } catch (UserStoreException e) {
+                log.error("Error occurred while setting tenant domain to thread local.");
+            }
             return new IdPInitSSOAuthnRequestValidator(messageContext).validate();
         }
         return false;
