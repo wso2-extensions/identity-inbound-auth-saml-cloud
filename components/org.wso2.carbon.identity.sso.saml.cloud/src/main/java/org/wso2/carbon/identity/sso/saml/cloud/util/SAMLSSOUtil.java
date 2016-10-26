@@ -1111,8 +1111,7 @@ public class SAMLSSOUtil {
                                 .isNotBlank(properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER).getValue())) {
                             ssoIdpConfigs.setIssuer(properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER).getValue());
                         } else {
-                            throw IdentityException.error("No Issuer provided for service provider " +
-                                    serviceProvider.getApplicationName());
+                            ssoIdpConfigs.setIssuer(config.getInboundAuthKey());
                         }
                         if (properties.get(SAMLSSOConstants.SAMLFormFields.ACS_URLS) != null && StringUtils
                                 .isNotBlank(properties.get(SAMLSSOConstants.SAMLFormFields.ACS_URLS).getValue())) {
