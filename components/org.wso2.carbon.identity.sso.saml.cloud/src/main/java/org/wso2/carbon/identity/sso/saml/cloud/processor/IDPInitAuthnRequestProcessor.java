@@ -21,11 +21,18 @@ package org.wso2.carbon.identity.sso.saml.cloud.processor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.identity.application.authentication.framework.cache.AuthenticationRequestCacheEntry;
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.FrameworkLoginResponse;
+import org.wso2.carbon.identity.application.authentication.framework.inbound.FrameworkRuntimeException;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityMessageContext;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityProcessor;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityRequest;
+import org.wso2.carbon.identity.application.authentication.framework.inbound.InboundConstants;
+import org.wso2.carbon.identity.application.authentication.framework.inbound.InboundUtil;
+import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticationRequest;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
@@ -34,32 +41,21 @@ import org.wso2.carbon.identity.sso.saml.cloud.handler.HandlerManager;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdpInitRequest;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.validators.IdPInitSSOAuthnRequestValidator;
+import org.wso2.carbon.registry.core.utils.UUIDGenerator;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Map;
 
-public class IDPInitAuthnRequestProcessor extends IdentityProcessor {
+public class IDPInitAuthnRequestProcessor extends AuthnRequestProcessor {
 
     private static Log log = LogFactory.getLog(IDPInitAuthnRequestProcessor.class);
-    private String relyingParty;
-
-    @Override
-    public String getName() {
-        return SAMLSSOConstants.SAMLFormFields.SAML_SSO;
-    }
 
     @Override
     public int getPriority() {
         return 4;
-    }
-
-    @Override
-    public String getCallbackPath(IdentityMessageContext context) {
-        return IdentityUtil.getServerURL("identity", false, false);
-    }
-
-    @Override
-    public String getRelyingPartyId() {
-        return this.relyingParty;
     }
 
     @Override
@@ -76,7 +72,6 @@ public class IDPInitAuthnRequestProcessor extends IdentityProcessor {
         SAMLMessageContext messageContext = new SAMLMessageContext((SAMLIdpInitRequest) identityRequest, new
                 HashMap<String, String>());
         HandlerManager.getInstance().validateRequest(messageContext);
-        this.relyingParty = messageContext.getIssuer();
         return buildResponseForFrameworkLogin(messageContext);
     }
 }
