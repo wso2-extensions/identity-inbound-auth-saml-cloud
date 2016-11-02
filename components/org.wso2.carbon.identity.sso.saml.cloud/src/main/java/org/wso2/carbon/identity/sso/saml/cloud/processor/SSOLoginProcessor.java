@@ -18,32 +18,20 @@
 
 package org.wso2.carbon.identity.sso.saml.cloud.processor;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.opensaml.saml2.core.AuthnRequest;
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityMessageContext;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityProcessor;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityRequest;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticationResult;
-import org.wso2.carbon.identity.base.IdentityException;
-import org.wso2.carbon.identity.core.model.SAMLSSOServiceProviderDO;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
-import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.HandlerManager;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdpInitRequest;
 import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLResponse;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLSpInitRequest;
-import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLErrorResponse;
-import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLLoginResponse;
-import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
-import org.wso2.carbon.user.api.UserStoreException;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SSOLoginProcessor extends IdentityProcessor {
     private static Log log = LogFactory.getLog(SSOLoginProcessor.class);
