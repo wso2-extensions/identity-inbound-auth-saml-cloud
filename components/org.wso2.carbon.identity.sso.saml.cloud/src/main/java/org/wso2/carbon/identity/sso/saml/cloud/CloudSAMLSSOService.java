@@ -131,7 +131,7 @@ public class CloudSAMLSSOService extends AbstractAdmin {
 
     private String getAppTypeFromAuthnConfigProps(InboundAuthenticationRequestConfig config) {
         for (Property property : config.getProperties()) {
-            if (StringUtils.equals(property.getName(), IdentityConstants.ServerConfig.WELLKNOWN_APPLICATION_TYPE)) {
+            if (StringUtils.equals(property.getName(), ApplicationConstants.WELLKNOWN_APPLICATION_TYPE)) {
                 return property.getValue();
             }
         }
