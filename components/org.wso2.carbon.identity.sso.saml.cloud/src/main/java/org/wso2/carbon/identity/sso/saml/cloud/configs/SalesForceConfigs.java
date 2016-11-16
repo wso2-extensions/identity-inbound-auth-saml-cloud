@@ -69,6 +69,7 @@ public class SalesForceConfigs extends AbstractInboundAuthenticatorConfig {
 
         Property acsindex = new Property();
         acsindex.setName(SAMLSSOConstants.SAMLFormFields.ACS_INDEX);
+        acsindex.setType("hidden");
         acsindex.setDisplayName("Assertion Consumer Service Index");
         try {
             acsindex.setValue(Integer.toString(IdentityUtil.getRandomInteger()));
@@ -82,35 +83,42 @@ public class SalesForceConfigs extends AbstractInboundAuthenticatorConfig {
 
         Property nameid = new Property();
         nameid.setName(SAMLSSOConstants.SAMLFormFields.NAME_ID_FORMAT);
+        nameid.setType("hidden");
         nameid.setDisplayName("NameID format ");
 
         Property alias = new Property();
         alias.setName(SAMLSSOConstants.SAMLFormFields.ALIAS);
+        alias.setType("hidden");
         alias.setDisplayName("Certificate Alias");
 
         Property signAlgo = new Property();
         signAlgo.setName(SAMLSSOConstants.SAMLFormFields.SIGN_ALGO);
+        signAlgo.setType("hidden");
         signAlgo.setDisplayName("Response Signing Algorithm ");
         signAlgo.setValue("http://www.w3.org/2000/09/xmldsig#rsa-sha1");
 
         Property digestAlgo = new Property();
         digestAlgo.setName(SAMLSSOConstants.SAMLFormFields.DIGEST_ALGO);
+        digestAlgo.setType("hidden");
         digestAlgo.setDisplayName("Response Digest Algorithm ");
         digestAlgo.setValue("http://www.w3.org/2000/09/xmldsig#sha1");
 
         Property enableSign = new Property();
         enableSign.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_RESPONSE_SIGNING);
+        enableSign.setType("hidden");
         enableSign.setDisplayName("Enable Response Signing");
         enableSign.setValue("true");
 
         Property enableSigValidation = new Property();
         enableSigValidation.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_SIGNATURE_VALIDATION);
+        enableSigValidation.setType("hidden");
         enableSigValidation.setDisplayName("Enable Signature Validation in Authentication Requests and Logout " +
                 "Requests");
         enableSigValidation.setValue("true");
 
         Property enableEncAssert = new Property();
         enableEncAssert.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_ENCRYPTION);
+        enableEncAssert.setType("hidden");
         enableEncAssert.setDisplayName("Enable Assertion Encryption ");
         enableEncAssert.setValue("false");
 
