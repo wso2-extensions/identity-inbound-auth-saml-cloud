@@ -48,7 +48,8 @@ public class NetSuiteConfigs extends AbstractInboundAuthenticatorConfig {
 
         Property acsurls = new Property();
         acsurls.setName(SAMLSSOConstants.SAMLFormFields.ACS_URLS);
-        acsurls.setValue("https://system.netsuite.com/saml2/acs,https://system.na1.netsuite.com/saml2/acs,https://system.sandbox.netsuite.com/saml2/acs");
+        acsurls.setValue("https://system.netsuite.com/saml2/acs,https://system.na1.netsuite.com/saml2/acs," +
+                "https://system.sandbox.netsuite.com/saml2/acs");
         acsurls.setDisplayName("Assertion Consumer URLs");
         acsurls.setDescription("The url where you should redirected after authenticated.");
 
@@ -60,86 +61,104 @@ public class NetSuiteConfigs extends AbstractInboundAuthenticatorConfig {
         } catch (IdentityException e) {
             log.error("Error occurred when generating attribute consumer service index.", e);
         }
+        acsindex.setType("hidden");
 
         Property defaultacs = new Property();
         defaultacs.setName(SAMLSSOConstants.SAMLFormFields.DEFAULT_ACS);
         defaultacs.setValue("https://system.netsuite.com/saml2/acs");
         defaultacs.setDisplayName("Default Assertion Consumer URL");
+        defaultacs.setType("hidden");
 
         Property nameid = new Property();
         nameid.setName(SAMLSSOConstants.SAMLFormFields.NAME_ID_FORMAT);
         nameid.setDisplayName("NameID format ");
+        nameid.setType("hidden");
 
         Property alias = new Property();
         alias.setName(SAMLSSOConstants.SAMLFormFields.ALIAS);
         alias.setDisplayName("Certificate Alias");
+        alias.setType("hidden");
 
         Property signAlgo = new Property();
         signAlgo.setName(SAMLSSOConstants.SAMLFormFields.SIGN_ALGO);
         signAlgo.setDisplayName("Response Signing Algorithm ");
         signAlgo.setValue("http://www.w3.org/2000/09/xmldsig#rsa-sha1");
+        signAlgo.setType("hidden");
 
         Property digestAlgo = new Property();
         digestAlgo.setName(SAMLSSOConstants.SAMLFormFields.DIGEST_ALGO);
         digestAlgo.setDisplayName("Response Digest Algorithm ");
         digestAlgo.setValue("http://www.w3.org/2000/09/xmldsig#sha1");
+        digestAlgo.setType("hidden");
 
         Property enableSign = new Property();
         enableSign.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_RESPONSE_SIGNING);
         enableSign.setDisplayName("Enable Response Signing");
         enableSign.setValue("false");
+        enableSign.setType("hidden");
 
         Property enableSigValidation = new Property();
         enableSigValidation.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_SIGNATURE_VALIDATION);
         enableSigValidation.setDisplayName("Enable Signature Validation in Authentication Requests and Logout " +
                 "Requests");
         enableSigValidation.setValue("false");
+        enableSigValidation.setType("hidden");
 
         Property enableEncAssert = new Property();
         enableEncAssert.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_ENCRYPTION);
         enableEncAssert.setDisplayName("Enable Assertion Encryption ");
         enableEncAssert.setValue("false");
+        enableEncAssert.setType("hidden");
 
         Property enableSLO = new Property();
         enableSLO.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_SINGLE_LOGOUT);
         enableSLO.setDisplayName("Enable Single Logout");
         enableSLO.setValue("false");
+        enableSLO.setType("hidden");
 
         Property sloUrl = new Property();
         sloUrl.setName(SAMLSSOConstants.SAMLFormFields.SLO_RESPONSE_URL);
         sloUrl.setDisplayName("SLO Response URL");
+        sloUrl.setType("hidden");
 
         Property sloRequestURL = new Property();
         sloRequestURL.setName(SAMLSSOConstants.SAMLFormFields.SLO_REQUEST_URL);
         sloRequestURL.setDisplayName("SLO Request URL");
+        sloRequestURL.setType("hidden");
 
         Property enableAtrProf = new Property();
         enableAtrProf.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ATTR_PROF);
         enableAtrProf.setDisplayName("Enable Attribute Profile ");
         enableAtrProf.setValue("true");
+        enableAtrProf.setType("hidden");
 
         Property enableDefaultAtrProf = new Property();
         enableDefaultAtrProf.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_DEFAULT_ATTR_PROF);
         enableDefaultAtrProf.setDisplayName("Include Attributes in the Response Always ");
         enableDefaultAtrProf.setValue("true");
+        enableDefaultAtrProf.setType("hidden");
 
         Property enableAudienceRestriction = new Property();
         enableAudienceRestriction.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_AUDIENCE_RESTRICTION);
         enableAudienceRestriction.setDisplayName("Enable Audience Restriction ");
         enableAudienceRestriction.setValue("false");
+        enableAudienceRestriction.setType("hidden");
 
         Property audiences = new Property();
         audiences.setName(SAMLSSOConstants.SAMLFormFields.AUDIENCE_URLS);
         audiences.setDisplayName("Audience URLs");
+        audiences.setType("hidden");
 
         Property enableRecipients = new Property();
         enableRecipients.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_RECIPIENTS);
         enableRecipients.setDisplayName("Enable Recipient Validation ");
         enableRecipients.setValue("false");
+        enableRecipients.setType("hidden");
 
         Property receipients = new Property();
         receipients.setName(SAMLSSOConstants.SAMLFormFields.RECEIPIENT_URLS);
         receipients.setDisplayName("Recipient URLs");
+        receipients.setType("hidden");
 
         Property enableIDPSSO = new Property();
         enableIDPSSO.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_IDP_INIT_SSO);
@@ -149,10 +168,12 @@ public class NetSuiteConfigs extends AbstractInboundAuthenticatorConfig {
         Property enableIDPSLO = new Property();
         enableIDPSLO.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_IDP_INIT_SLO);
         enableIDPSLO.setDisplayName("Enable IdP Initiated SLO ");
+        enableIDPSLO.setType("hidden");
 
         Property idpSLOUrls = new Property();
         idpSLOUrls.setName(SAMLSSOConstants.SAMLFormFields.IDP_SLO_URLS);
         idpSLOUrls.setDisplayName("IDP SLO Urls");
+        idpSLOUrls.setType("hidden");
 
         return new Property[]{issuer, appType, acsurls, acsindex, defaultacs, nameid, alias, signAlgo, digestAlgo,
                 enableSign, enableSigValidation, enableEncAssert, enableSLO, sloUrl, sloRequestURL, enableAtrProf,
