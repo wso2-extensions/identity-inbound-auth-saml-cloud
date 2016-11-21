@@ -153,10 +153,12 @@ public class NetSuiteConfigs extends AbstractInboundAuthenticatorConfig {
         enableRecipients.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_RECIPIENTS);
         enableRecipients.setDisplayName("Enable Recipient Validation ");
         enableRecipients.setValue("false");
+        enableRecipients.setType("hidden");
 
         Property receipients = new Property();
         receipients.setName(SAMLSSOConstants.SAMLFormFields.RECEIPIENT_URLS);
         receipients.setDisplayName("Recipient URLs");
+        receipients.setType("hidden");
 
         Property enableIDPSSO = new Property();
         enableIDPSSO.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_IDP_INIT_SSO);
@@ -166,10 +168,12 @@ public class NetSuiteConfigs extends AbstractInboundAuthenticatorConfig {
         Property enableIDPSLO = new Property();
         enableIDPSLO.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_IDP_INIT_SLO);
         enableIDPSLO.setDisplayName("Enable IdP Initiated SLO ");
+        enableIDPSLO.setType("hidden");
 
         Property idpSLOUrls = new Property();
         idpSLOUrls.setName(SAMLSSOConstants.SAMLFormFields.IDP_SLO_URLS);
         idpSLOUrls.setDisplayName("IDP SLO Urls");
+        idpSLOUrls.setType("hidden");
 
         return new Property[]{issuer, appType, acsurls, acsindex, defaultacs, nameid, alias, signAlgo, digestAlgo,
                 enableSign, enableSigValidation, enableEncAssert, enableSLO, sloUrl, sloRequestURL, enableAtrProf,
