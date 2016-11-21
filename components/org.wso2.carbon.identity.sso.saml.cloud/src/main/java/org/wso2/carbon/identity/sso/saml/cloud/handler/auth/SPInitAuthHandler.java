@@ -111,6 +111,7 @@ public class SPInitAuthHandler extends AuthHandler {
             SAMLSSOUtil.setIsSaaSApplication(authnResult.isSaaSApp());
             try {
                 SAMLSSOUtil.setUserTenantDomain(authnResult.getSubject().getTenantDomain());
+                SAMLSSOUtil.setTenantDomainInThreadLocal(messageContext.getTenantDomain());
             } catch (UserStoreException e) {
                 builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
                 return builder;
