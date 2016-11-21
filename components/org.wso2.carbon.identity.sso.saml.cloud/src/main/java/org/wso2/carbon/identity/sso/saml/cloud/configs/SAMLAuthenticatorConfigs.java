@@ -131,12 +131,12 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
         Property enableAtrProf = new Property();
         enableAtrProf.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ATTR_PROF);
         enableAtrProf.setDisplayName("Enable Attribute Profile ");
-        enableAtrProf.setValue("false");
+        enableAtrProf.setValue("true");
 
         Property enableDefaultAtrProf = new Property();
         enableDefaultAtrProf.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_DEFAULT_ATTR_PROF);
         enableDefaultAtrProf.setDisplayName("Include Attributes in the Response Always ");
-        enableDefaultAtrProf.setValue("false");
+        enableDefaultAtrProf.setValue("true");
 
         Property enableAudienceRestriction = new Property();
         enableAudienceRestriction.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_AUDIENCE_RESTRICTION);
