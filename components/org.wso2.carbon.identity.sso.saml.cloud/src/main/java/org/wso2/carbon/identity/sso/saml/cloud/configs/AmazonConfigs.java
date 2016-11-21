@@ -130,6 +130,13 @@ public class AmazonConfigs extends AbstractInboundAuthenticatorConfig {
         }
         acsindex.setType("hidden");
 
+        Property enableSigValidation = new Property();
+        enableSigValidation.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_SIGNATURE_VALIDATION);
+        enableSigValidation.setType("hidden");
+        enableSigValidation.setDisplayName("Enable Signature Validation in Authentication Requests and Logout " +
+                "Requests");
+        enableSigValidation.setValue("false");
+
         Property enableIDPSSO = new Property();
         enableIDPSSO.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_IDP_INIT_SSO);
         enableIDPSSO.setValue("true");
@@ -147,7 +154,7 @@ public class AmazonConfigs extends AbstractInboundAuthenticatorConfig {
         idpSLOUrls.setType("hidden");
 
         return new Property[]{issuer, appType, acsurls, defaultacs, nameid, signAlgo, digestAlgo, enableSign,
-                enableEncAssert, enableAtrProf, acsindex, enableDefaultAtrProf, enableIDPSSO, enableIDPSLO, idpSLOUrls};
+                enableEncAssert, enableAtrProf, acsindex, enableDefaultAtrProf, enableSigValidation, enableIDPSSO, enableIDPSLO, idpSLOUrls};
     }
 
     @Override

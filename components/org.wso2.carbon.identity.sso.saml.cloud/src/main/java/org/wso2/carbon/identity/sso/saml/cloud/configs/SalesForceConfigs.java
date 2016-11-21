@@ -67,6 +67,18 @@ public class SalesForceConfigs extends AbstractInboundAuthenticatorConfig {
         acsurls.setDisplayName("Assertion Consumer URLs");
         acsurls.setDescription("The url where you should redirected after authenticated.");
 
+        Property enableAtrProf = new Property();
+        enableAtrProf.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ATTR_PROF);
+        enableAtrProf.setDisplayName("Enable Attribute Profile ");
+        enableAtrProf.setValue("true");
+        enableAtrProf.setType("hidden");
+
+        Property enableDefaultAtrProf = new Property();
+        enableDefaultAtrProf.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_DEFAULT_ATTR_PROF);
+        enableDefaultAtrProf.setDisplayName("Include Attributes in the Response Always ");
+        enableDefaultAtrProf.setValue("true");
+        enableDefaultAtrProf.setType("hidden");
+
         Property acsindex = new Property();
         acsindex.setName(SAMLSSOConstants.SAMLFormFields.ACS_INDEX);
         acsindex.setType("hidden");
@@ -114,7 +126,7 @@ public class SalesForceConfigs extends AbstractInboundAuthenticatorConfig {
         enableSigValidation.setType("hidden");
         enableSigValidation.setDisplayName("Enable Signature Validation in Authentication Requests and Logout " +
                 "Requests");
-        enableSigValidation.setValue("true");
+        enableSigValidation.setValue("false");
 
         Property enableEncAssert = new Property();
         enableEncAssert.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_ENCRYPTION);
@@ -122,8 +134,8 @@ public class SalesForceConfigs extends AbstractInboundAuthenticatorConfig {
         enableEncAssert.setDisplayName("Enable Assertion Encryption ");
         enableEncAssert.setValue("false");
 
-        return new Property[]{issuer, appType, acsurls, acsindex, defaultacs, nameid, alias, signAlgo, digestAlgo,
-                enableSign, enableSigValidation, enableEncAssert};
+        return new Property[]{issuer, appType, acsurls, enableAtrProf, enableDefaultAtrProf, acsindex, defaultacs, nameid, alias,
+                signAlgo, digestAlgo, enableSign, enableSigValidation, enableEncAssert};
     }
 
     @Override
