@@ -69,7 +69,7 @@ public class SignKeyDataHolder implements X509Credential {
         try {
 
             userTenantDomain = SAMLSSOUtil.getUserTenantDomain();
-            spTenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+            spTenantDomain = SAMLSSOUtil.getTenantDomainFromThreadLocal();
 
             if (userTenantDomain == null) {
                 // all local authenticator must set the value of userTenantDomain.
@@ -91,7 +91,7 @@ public class SignKeyDataHolder implements X509Credential {
                 tenantID = SAMLSSOUtil.getRealmService().getTenantManager().getTenantId(tenantDomain);
             } else {
                 tenantDomain = spTenantDomain;
-                tenantID = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
+                tenantID = SAMLSSOUtil.getRealmService().getTenantManager().getTenantId(tenantDomain);
             }
 
             IdentityTenantUtil.initializeRegistry(tenantID, tenantDomain);

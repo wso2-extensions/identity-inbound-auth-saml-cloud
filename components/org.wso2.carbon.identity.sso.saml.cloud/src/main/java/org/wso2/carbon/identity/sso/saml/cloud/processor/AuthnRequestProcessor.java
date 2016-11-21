@@ -72,6 +72,7 @@ public abstract class AuthnRequestProcessor extends IdentityProcessor {
                 String.valueOf(context.getParameter(InboundConstants.PassiveAuth))));
         authenticationRequest.setForceAuth(Boolean.parseBoolean(
                 String.valueOf(context.getParameter(InboundConstants.ForceAuth))));
+        authenticationRequest.setTenantDomain(((SAMLMessageContext) context).getTenantDomain());
         try {
             authenticationRequest.setCommonAuthCallerPath(URLEncoder.encode(getCallbackPath(context),
                     StandardCharsets.UTF_8.name()));
