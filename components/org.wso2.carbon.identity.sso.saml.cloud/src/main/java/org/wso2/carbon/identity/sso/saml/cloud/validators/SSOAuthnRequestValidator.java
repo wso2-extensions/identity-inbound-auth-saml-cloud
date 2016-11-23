@@ -17,6 +17,7 @@
  */
 package org.wso2.carbon.identity.sso.saml.cloud.validators;
 
+import org.opensaml.saml2.core.AuthnRequest;
 import org.wso2.carbon.identity.base.IdentityException;
 
 import java.io.IOException;
@@ -35,5 +36,5 @@ public interface SSOAuthnRequestValidator {
      * @return boolean : includes whether the request is validated
      * @throws IdentityException
      */
-    boolean validate() throws IdentityException, IOException;
+    boolean validate(AuthnRequest request) throws IdentityException, IOException;
 }

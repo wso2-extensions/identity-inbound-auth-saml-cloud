@@ -38,7 +38,10 @@ public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable
     /**
      * The unmarshelled SAML Request
      */
-    private AuthnRequest authnRequest;
+    private String destination;
+    private String id;
+    private String assertionConsumerUrl;
+    private boolean isPassive;
 
     /**
      * Should be set in validateAuthnRequest
@@ -63,9 +66,13 @@ public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable
         return (SAMLIdentityRequest) request;
     }
 
+    public void setDestination(String destination) {
+        this.destination = destination;
+    }
+
     public String getDestination() {
-        if (!isIdpInitSSO() && this.authnRequest != null) {
-            return this.authnRequest.getDestination();
+        if (!isIdpInitSSO()) {
+            return this.destination;
         } else if (isIdpInitSSO()) {
             return ((SAMLIdpInitRequest) this.getRequest()).getAcs();
         }
@@ -74,15 +81,6 @@ public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable
 
     public boolean isIdpInitSSO() {
         return this.getRequest() instanceof  SAMLIdpInitRequest;
-    }
-
-
-    public AuthnRequest getAuthnRequest() {
-        return authnRequest;
-    }
-
-    public void setAuthnRequest(AuthnRequest authnRequest) {
-        this.authnRequest = authnRequest;
     }
 
     public String getRelayState() {
@@ -125,19 +123,34 @@ public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable
         return this.request.getParameter(MultitenantConstants.SSO_AUTH_SESSION_ID);
     }
 
+    public void setId(String id){
+        this.id = id;
+    }
     public String getId() {
-        if(!isIdpInitSSO() && this.authnRequest != null) {
-            return this.authnRequest.getID();
+        if(!isIdpInitSSO()) {
+            return this.id;
         }
         return null;
     }
 
+    public void setAssertionConsumerUrl(String assertionConsumerUrl) {
+        this.assertionConsumerUrl = assertionConsumerUrl;
+    }
+
     public String getAssertionConsumerURL() {
-        if(!isIdpInitSSO() && this.authnRequest != null) {
-            return this.authnRequest.getAssertionConsumerServiceURL();
+        if(!isIdpInitSSO()) {
+            return this.assertionConsumerUrl;
         } else {
             return samlssoServiceProviderDO.getDefaultAssertionConsumerUrl();
         }
+    }
+
+    public void setIsPassive(boolean isPassive) {
+        this.isPassive = isPassive;
+    }
+
+    public boolean isPassive() {
+        return this.isPassive;
     }
 
     public String getTenantDomain() {

@@ -20,6 +20,7 @@ package org.wso2.carbon.identity.sso.saml.cloud.validators;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.opensaml.saml2.core.AuthnRequest;
 import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
@@ -51,7 +52,7 @@ public class IdPInitSSOAuthnRequestValidator implements SSOAuthnRequestValidator
      * @return SAMLSSOSignInResponseDTO
      * @throws org.wso2.carbon.identity.base.IdentityException
      */
-    public boolean validate() throws IdentityException,IOException {
+    public boolean validate(AuthnRequest authnRequest) throws IdentityException,IOException {
 
 
             // spEntityID MUST NOT be null

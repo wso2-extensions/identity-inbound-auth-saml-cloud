@@ -54,9 +54,8 @@ public class SPInitSSOAuthnRequestValidator implements SSOAuthnRequestValidator{
      * @return boolean
      * @throws IdentityException
      */
-    public boolean validate() throws IdentityException, IOException {
+    public boolean validate(AuthnRequest authnReq) throws IdentityException, IOException {
 
-        AuthnRequest authnReq = messageContext.getAuthnRequest();
         Issuer issuer = authnReq.getIssuer();
         Subject subject = authnReq.getSubject();
 
@@ -70,7 +69,7 @@ public class SPInitSSOAuthnRequestValidator implements SSOAuthnRequestValidator{
             throw SAML2ClientException.error(SAMLSSOUtil.buildErrorResponse(SAMLSSOConstants.StatusCodes
                             .VERSION_MISMATCH, "Invalid SAML Version " + "in Authentication Request. SAML Version" +
                             " should " +
-                            "be equal to 2.0", authnReq.getAssertionConsumerServiceURL()), SAMLSSOConstants
+                            "be equal to 2.0", messageContext.getAssertionConsumerURL()), SAMLSSOConstants
                             .Notification.EXCEPTION_STATUS,
                     SAMLSSOConstants.Notification.EXCEPTION_MESSAGE, authnReq.getAssertionConsumerServiceURL());
         }

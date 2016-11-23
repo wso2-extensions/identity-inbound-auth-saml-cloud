@@ -61,7 +61,6 @@ public class SPInitAuthHandler extends AuthHandler {
                                                                                AuthenticationResult authnResult,
                                                                                IdentityRequest identityRequest)
             throws IdentityException, IOException {
-        AuthnRequest authnReq = messageContext.getAuthnRequest();
         SAMLResponse.SAMLResponseBuilder builder;
         if (authnResult == null || !authnResult.isAuthenticated()) {
 
@@ -69,9 +68,9 @@ public class SPInitAuthHandler extends AuthHandler {
                 log.debug("Unauthenticated User.");
             }
 
-            if (authnReq.isPassive()) { //if passive
+            if (messageContext.isPassive()) { //if passive
 
-                String destination = authnReq.getAssertionConsumerServiceURL();
+                String destination = messageContext.getAssertionConsumerURL();
                 List<String> statusCodes = new ArrayList<String>();
                 statusCodes.add(SAMLSSOConstants.StatusCodes.NO_PASSIVE);
                 statusCodes.add(SAMLSSOConstants.StatusCodes.IDENTITY_PROVIDER_ERROR);
@@ -100,8 +99,8 @@ public class SPInitAuthHandler extends AuthHandler {
                             .Notification.EXCEPTION_STATUS);
                     ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setMessageLog(SAMLSSOConstants
                             .Notification.EXCEPTION_MESSAGE);
-                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setAcsUrl(authnReq
-                            .getAssertionConsumerServiceURL());
+                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setAcsUrl(messageContext
+                            .getAssertionConsumerURL());
                     return builder;
                 } else {
                     throw IdentityException.error("Session data is not found for authenticated user");

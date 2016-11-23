@@ -53,7 +53,10 @@ public class SPInitSAMLValidator extends SAMLValidator {
         }
         XMLObject request = SAMLSSOUtil.unmarshall(decodedRequest);
         if (request instanceof AuthnRequest) {
-            messageContext.setAuthnRequest((AuthnRequest) request);
+            messageContext.setDestination(((AuthnRequest) request).getDestination());
+            messageContext.setId(((AuthnRequest) request).getID());
+            messageContext.setAssertionConsumerUrl(((AuthnRequest) request).getAssertionConsumerServiceURL());
+            messageContext.setIsPassive(((AuthnRequest) request).isPassive());
             messageContext.setTenantDomain(messageContext.getRequest().getTenantDomain());
             try {
                 SAMLSSOUtil.setTenantDomainInThreadLocal(messageContext.getRequest().getTenantDomain());
@@ -61,7 +64,7 @@ public class SPInitSAMLValidator extends SAMLValidator {
                 log.error("Error occurred while setting tenant domain to thread local.");
             }
             SSOAuthnRequestValidator reqValidator = new SPInitSSOAuthnRequestValidator(messageContext);
-            return reqValidator.validate();
+            return reqValidator.validate((AuthnRequest)request);
         }
         return false;
     }

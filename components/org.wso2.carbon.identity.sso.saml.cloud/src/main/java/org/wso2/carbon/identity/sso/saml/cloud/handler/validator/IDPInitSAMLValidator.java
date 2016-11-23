@@ -48,7 +48,7 @@ public class IDPInitSAMLValidator extends SAMLValidator {
             } catch (UserStoreException e) {
                 log.error("Error occurred while setting tenant domain to thread local.");
             }
-            return new IdPInitSSOAuthnRequestValidator(messageContext).validate();
+            return new IdPInitSSOAuthnRequestValidator(messageContext).validate(null);
         }
         return false;
     }
