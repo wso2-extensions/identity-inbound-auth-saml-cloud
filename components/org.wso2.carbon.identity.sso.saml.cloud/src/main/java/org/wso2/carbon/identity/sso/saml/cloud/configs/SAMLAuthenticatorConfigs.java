@@ -68,15 +68,6 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
         acsurls.setDisplayName("Assertion Consumer URLs");
         acsurls.setDescription("The url where you should redirected after authenticated.");
 
-        Property acsindex = new Property();
-        acsindex.setName(SAMLSSOConstants.SAMLFormFields.ACS_INDEX);
-        acsindex.setDisplayName("Assertion Consumer Service Index");
-        try {
-            acsindex.setValue(Integer.toString(IdentityUtil.getRandomInteger()));
-        } catch (IdentityException e) {
-            log.error("Error occurred when generating attribute consumer service index.", e);
-        }
-
         Property defaultacs = new Property();
         defaultacs.setName(SAMLSSOConstants.SAMLFormFields.DEFAULT_ACS);
         defaultacs.setDisplayName("Default Assertion Consumer URL");
@@ -142,6 +133,18 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
         enableDefaultAtrProf.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_DEFAULT_ATTR_PROF);
         enableDefaultAtrProf.setDisplayName("Include Attributes in the Response Always ");
         enableDefaultAtrProf.setValue("false");
+        enableDefaultAtrProf.setType("hidden");
+
+        Property acsindex = new Property();
+        acsindex.setName(SAMLSSOConstants.SAMLFormFields.ACS_INDEX);
+        acsindex.setDisplayName("Assertion Consumer Service Index");
+        try {
+            acsindex.setValue(Integer.toString(IdentityUtil.getRandomInteger()));
+        } catch (IdentityException e) {
+            log.error("Error occurred when generating attribute consumer service index.", e);
+        }
+        acsindex.setType("hidden");
+
 
         Property enableAudienceRestriction = new Property();
         enableAudienceRestriction.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_AUDIENCE_RESTRICTION);
