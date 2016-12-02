@@ -108,7 +108,9 @@ public class SAMLSSOConstants {
         public static final String ENABLE_IDP_INIT_SLO = "enableIdPInitSLO";
         public static final String ACS_SEPERATE_CHAR = ",";
         public static final String SAML_SSO = "samlssocloud";
+        public static final String SAMPLE_CONF = "sampleConf";
         public static final String CUSTOM = "custom";
+        public static final String SAMPLE = "sample";
 
     }
 
