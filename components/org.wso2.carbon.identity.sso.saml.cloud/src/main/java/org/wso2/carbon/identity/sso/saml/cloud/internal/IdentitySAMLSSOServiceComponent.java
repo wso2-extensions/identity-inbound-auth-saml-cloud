@@ -37,7 +37,6 @@ import org.wso2.carbon.identity.sso.saml.cloud.configs.GoToMeetingConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.configs.NetSuiteConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.configs.SalesForceConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.configs.ZuoraConfigs;
-import org.wso2.carbon.identity.sso.saml.cloud.configs.SampleConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.auth.IDPInitAuthHandler;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.auth.SPInitAuthHandler;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.validator.IDPInitSAMLValidator;
@@ -154,10 +153,6 @@ public class IdentitySAMLSSOServiceComponent {
         ZuoraConfigs zuora = new ZuoraConfigs();
         Hashtable<String, String> zuraprops = new Hashtable<String, String>();
         ctxt.getBundleContext().registerService(AbstractInboundAuthenticatorConfig.class, zuora, zuraprops);
-
-        SampleConfigs sample = new SampleConfigs();
-        Hashtable<String, String> sampleprops = new Hashtable<String, String>();
-        ctxt.getBundleContext().registerService(AbstractInboundAuthenticatorConfig.class, sample, sampleprops);
 
         String redirectHtmlPath = null;
         FileInputStream fis = null;
