@@ -25,7 +25,6 @@
         <description>
             To administer Configuration related functionality.
         </description>
-        <parameter name="ServiceClass">org.wso2.carbon.identity.sso.saml.cloud.CloudSAMLSSOService</parameter>
         <parameter name="adminService" locked="true">true</parameter>
         <parameter name="AuthorizationAction" locked="true">/permission/admin/manage</parameter>
     </service>

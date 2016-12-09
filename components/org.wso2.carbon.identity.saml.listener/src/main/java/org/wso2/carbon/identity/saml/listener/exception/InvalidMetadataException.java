@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.identity.sso.saml.cloud.exception;
+package org.wso2.carbon.identity.saml.listener.exception;
 
 public class InvalidMetadataException extends Exception {
 

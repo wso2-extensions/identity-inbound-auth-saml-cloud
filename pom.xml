@@ -246,6 +246,7 @@
 
     <modules>
         <module>components/org.wso2.carbon.identity.sso.saml.cloud</module>
+        <module>components/org.wso2.carbon.identity.saml.listener</module>
     </modules>
 
     <properties>
