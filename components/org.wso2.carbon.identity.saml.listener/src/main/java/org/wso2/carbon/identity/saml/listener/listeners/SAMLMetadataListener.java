@@ -67,6 +67,8 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
         InboundAuthenticationRequestConfig authnConfig = null;
         Map<String, Property> properties = new HashMap<>();
         List<String> standardInboundAuthTypes = new ArrayList<String>();
+        int tenantId = CarbonContext.getThreadLocalCarbonContext().getTenantId();
+        boolean metadataGiven = false;
         String spType = getConfigTypeFromSPProperties(serviceProvider.getSpProperties());
         standardInboundAuthTypes.add(FrameworkConstants.OAUTH2);
         standardInboundAuthTypes.add(IdentityApplicationConstants.Authenticator.WSTrust.NAME);
@@ -80,17 +82,55 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
                 authnConfig = config;
                 for (Property property : config.getProperties()) {
                     if (StringUtils.equals(property.getName(), SAMLSSOConstants.SAMLFormFields.METADATA) &&
-                            StringUtils.isBlank(property.getValue())) {
+                            StringUtils.isNotBlank(property.getValue())) {
                         //metadata not given
-                        return true;
+                        metadataGiven = true;
                     }
                     properties.put(property.getName(), property);
                 }
-                return addSPConfigByMetadata(serviceProvider, userName, tenantDomain, authnConfig, properties);
             }
         }
-
+        if (metadataGiven) {
+            addSPConfigByMetadata(serviceProvider, userName, tenantDomain, authnConfig, properties);
+        } else {
+            String pemCert = properties.get(SAMLSSOConstants.SAMLFormFields.PUB_CERT).getValue();
+            String issuer = properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER).getValue();
+            if (pemCert != null && StringUtils.isNotBlank(pemCert)) {
+                addCertToKeyStore(serviceProvider.getApplicationName() + "_" + issuer, pemCert, tenantId, tenantDomain);
+            }
+        }
+        if (properties.get(SAMLSSOConstants.SAMLFormFields.METADATA) != null) {
+            properties.remove(SAMLSSOConstants.SAMLFormFields.METADATA);
+        }
+        if (properties.get(SAMLSSOConstants.SAMLFormFields.PUB_CERT) != null) {
+            properties.remove(SAMLSSOConstants.SAMLFormFields.PUB_CERT);
+        }
+        authnConfig.setProperties(properties.values().toArray(new Property[properties.keySet().size()]));
         return true;
+    }
+
+    private void addCertToKeyStore(String alias,String pemCert,int tenantId, String tenantDomain) {
+
+        KeyStoreAdminInterface keystore = new KeyStoreAdminServiceImpl();
+        try {
+            if (tenantId != -1234) {// for tenants, load private key from their generated key store
+                keystore.importCertToStore(alias, pemCert, SAMLSSOUtil
+                        .generateKSNameFromDomainName(tenantDomain));
+            } else { // for super tenant, load the default pub. cert using the
+                // config. in carbon.xml
+                KeyStoreManager keyStoreManager = KeyStoreManager.getInstance(tenantId);
+
+                String keyStoreName = ServerConfiguration.getInstance().getFirstProperty("Security.KeyStore.Location");
+                String[] keyStorePath = keyStoreName.split("/");
+                keyStoreName = keyStorePath[keyStorePath.length - 1];
+                keystore.importCertToStore(alias, pemCert, keyStoreName);
+            }
+
+        } catch (SecurityConfigException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Failed to import the cert in to the keystore.");
+            }
+        }
     }
 
     /**
@@ -145,7 +185,6 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
                 setSAMLConfigs(properties, parser, serviceProviderName, tenantDomain, tenantId);
 
             }
-            authnConfig.setProperties(properties.values().toArray(new Property[properties.keySet().size()]));
         } catch (IdentityApplicationManagementException | IdentityException | InvalidMetadataException e) {
             if (log.isDebugEnabled()) {
                 log.debug("Failed to add the authenticator properties for the serviceprovider " + serviceProviderName);
@@ -166,26 +205,7 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
         if (properties.get(SAMLSSOConstants.SAMLFormFields.ALIAS) != null) {
             properties.get(SAMLSSOConstants.SAMLFormFields.ALIAS).setValue(spName + "_" + samlConfigs.getCertAlias());
         }
-        KeyStoreAdminInterface keystore = new KeyStoreAdminServiceImpl();
-        try {
-            if (tenantId != -1234) {// for tenants, load private key from their generated key store
-                keystore.importCertToStore(samlConfigs.getCertAlias(), parser.getCertificate(), SAMLSSOUtil
-                        .generateKSNameFromDomainName(tenantDomain));
-            } else { // for super tenant, load the default pub. cert using the
-                // config. in carbon.xml
-                KeyStoreManager keyStoreManager = KeyStoreManager.getInstance(tenantId);
-
-                String keyStoreName = ServerConfiguration.getInstance().getFirstProperty("Security.KeyStore.Location");
-                String[] keyStorePath = keyStoreName.split("/");
-                keyStoreName = keyStorePath[keyStorePath.length - 1];
-                keystore.importCertToStore(samlConfigs.getCertAlias(),parser.getCertificate(),keyStoreName);
-            }
-
-        } catch (SecurityConfigException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Failed to import the cert in to the keystore.");
-            }
-        }
+        addCertToKeyStore(samlConfigs.getCertAlias(),parser.getCertificate(),tenantId,tenantDomain);
         if (properties.get(SAMLSSOConstants.SAMLFormFields.ACS_URLS) != null) {
             properties.get(SAMLSSOConstants.SAMLFormFields.ACS_URLS).setValue(StringUtils.join(samlConfigs
                     .getAssertionConsumerUrls(), ","));
@@ -221,14 +241,6 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
         if (properties.get(SAMLSSOConstants.SAMLFormFields.SLO_REQUEST_URL) != null) {
             properties.get(SAMLSSOConstants.SAMLFormFields.SLO_REQUEST_URL).setValue(samlConfigs.getSloResponseURL());
         }
-        if (properties.get(SAMLSSOConstants.SAMLFormFields.METADATA) != null) {
-            properties.remove(SAMLSSOConstants.SAMLFormFields.METADATA);
-        }
-        if (properties.get(SAMLSSOConstants.SAMLFormFields.PUB_CERT) != null) {
-            properties.remove(SAMLSSOConstants.SAMLFormFields.PUB_CERT);
-        }
-
-
     }
 
     private String getAppTypeFromAuthnConfigProps(InboundAuthenticationRequestConfig config) {
