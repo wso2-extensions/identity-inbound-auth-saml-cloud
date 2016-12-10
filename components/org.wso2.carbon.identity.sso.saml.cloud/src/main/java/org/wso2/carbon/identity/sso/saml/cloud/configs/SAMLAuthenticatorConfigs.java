@@ -82,6 +82,16 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
         alias.setDisplayName("Certificate Alias");
         alias.setType("hidden");
 
+        Property certificate = new Property();
+        certificate.setName(SAMLSSOConstants.SAMLFormFields.PUB_CERT);
+        certificate.setDisplayName("Certificate");
+        certificate.setType("hidden");
+
+        Property metadata = new Property();
+        metadata.setName(SAMLSSOConstants.SAMLFormFields.METADATA);
+        metadata.setDisplayName("Metadata File");
+        metadata.setType("hidden");
+
         Property signAlgo = new Property();
         signAlgo.setName(SAMLSSOConstants.SAMLFormFields.SIGN_ALGO);
         signAlgo.setDisplayName("Response Signing Algorithm ");
@@ -106,6 +116,12 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
         enableSigValidation.setValue("false");
         enableSigValidation.setType("hidden");
 
+        Property enableAssertionSigned = new Property();
+        enableAssertionSigned.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_SIGNING);
+        enableAssertionSigned.setDisplayName("Enable Assertion Signing ");
+        enableAssertionSigned.setValue("true");
+        enableAssertionSigned.setType("hidden");
+
         Property enableEncAssert = new Property();
         enableEncAssert.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_ENCRYPTION);
         enableEncAssert.setDisplayName("Enable Assertion Encryption ");
@@ -127,12 +143,12 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
         Property enableAtrProf = new Property();
         enableAtrProf.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ATTR_PROF);
         enableAtrProf.setDisplayName("Enable Attribute Profile ");
-        enableAtrProf.setValue("false");
+        enableAtrProf.setValue("true");
 
         Property enableDefaultAtrProf = new Property();
         enableDefaultAtrProf.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_DEFAULT_ATTR_PROF);
         enableDefaultAtrProf.setDisplayName("Include Attributes in the Response Always ");
-        enableDefaultAtrProf.setValue("false");
+        enableDefaultAtrProf.setValue("true");
         enableDefaultAtrProf.setType("hidden");
 
         Property acsindex = new Property();
@@ -179,7 +195,7 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
         return new Property[]{issuer, appType, acsurls, acsindex, defaultacs, nameid, alias, signAlgo, digestAlgo,
                 enableSign, enableSigValidation, enableEncAssert, enableSLO, sloUrl, sloRequestURL, enableAtrProf,
                 enableDefaultAtrProf, enableAudienceRestriction, audiences, enableRecipients, receipients,
-                enableIDPSSO, enableIDPSLO, idpSLOUrls};
+                enableIDPSSO, enableIDPSLO, idpSLOUrls,enableAssertionSigned, certificate, metadata};
     }
 
     @Override

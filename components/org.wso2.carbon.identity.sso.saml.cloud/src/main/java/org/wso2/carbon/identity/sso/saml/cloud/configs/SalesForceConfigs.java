@@ -79,6 +79,11 @@ public class SalesForceConfigs extends AbstractInboundAuthenticatorConfig {
         enableDefaultAtrProf.setValue("true");
         enableDefaultAtrProf.setType("hidden");
 
+        Property metadata = new Property();
+        metadata.setName(SAMLSSOConstants.SAMLFormFields.METADATA);
+        metadata.setDisplayName("Metadata File");
+        metadata.setType("hidden");
+
         Property acsindex = new Property();
         acsindex.setName(SAMLSSOConstants.SAMLFormFields.ACS_INDEX);
         acsindex.setType("hidden");
@@ -97,6 +102,10 @@ public class SalesForceConfigs extends AbstractInboundAuthenticatorConfig {
         nameid.setName(SAMLSSOConstants.SAMLFormFields.NAME_ID_FORMAT);
         nameid.setType("hidden");
         nameid.setDisplayName("NameID format ");
+
+        Property certificate = new Property();
+        certificate.setName(SAMLSSOConstants.SAMLFormFields.PUB_CERT);
+        certificate.setDisplayName("Certificate");
 
         Property alias = new Property();
         alias.setName(SAMLSSOConstants.SAMLFormFields.ALIAS);
@@ -128,14 +137,21 @@ public class SalesForceConfigs extends AbstractInboundAuthenticatorConfig {
                 "Requests");
         enableSigValidation.setValue("false");
 
+        Property enableAssertionSigned = new Property();
+        enableAssertionSigned.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_SIGNING);
+        enableAssertionSigned.setDisplayName("Enable Assertion Signing ");
+        enableAssertionSigned.setValue("true");
+        enableAssertionSigned.setType("hidden");
+
         Property enableEncAssert = new Property();
         enableEncAssert.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_ENCRYPTION);
         enableEncAssert.setType("hidden");
         enableEncAssert.setDisplayName("Enable Assertion Encryption ");
         enableEncAssert.setValue("false");
 
-        return new Property[]{issuer, appType, acsurls, enableAtrProf, enableDefaultAtrProf, acsindex, defaultacs, nameid, alias,
-                signAlgo, digestAlgo, enableSign, enableSigValidation, enableEncAssert};
+        return new Property[]{issuer, appType, acsurls, enableAtrProf, enableDefaultAtrProf, acsindex, defaultacs,
+                nameid, alias, signAlgo, digestAlgo, enableSign, enableSigValidation, enableEncAssert,
+                enableAssertionSigned, certificate, metadata};
     }
 
     @Override

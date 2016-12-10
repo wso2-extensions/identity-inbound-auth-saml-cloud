@@ -93,12 +93,21 @@ public class GoToMeetingConfigs extends AbstractInboundAuthenticatorConfig {
         nameid.setName(SAMLSSOConstants.SAMLFormFields.NAME_ID_FORMAT);
         nameid.setDisplayName("NameID format ");
         nameid.setType("hidden");
-        nameid.setType("hidden");;
+        nameid.setType("hidden");
+
+        Property certificate = new Property();
+        certificate.setName(SAMLSSOConstants.SAMLFormFields.PUB_CERT);
+        certificate.setDisplayName("Certificate");
 
         Property alias = new Property();
         alias.setName(SAMLSSOConstants.SAMLFormFields.ALIAS);
         alias.setDisplayName("Certificate Alias");
         alias.setType("hidden");
+
+        Property metadata = new Property();
+        metadata.setName(SAMLSSOConstants.SAMLFormFields.METADATA);
+        metadata.setDisplayName("Metadata File");
+        metadata.setType("hidden");
 
         Property signAlgo = new Property();
         signAlgo.setName(SAMLSSOConstants.SAMLFormFields.SIGN_ALGO);
@@ -124,6 +133,12 @@ public class GoToMeetingConfigs extends AbstractInboundAuthenticatorConfig {
                 "Requests");
         enableSigValidation.setValue("false");
         enableSigValidation.setType("hidden");
+
+        Property enableAssertionSigned = new Property();
+        enableAssertionSigned.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_SIGNING);
+        enableAssertionSigned.setDisplayName("Enable Assertion Signing ");
+        enableAssertionSigned.setValue("true");
+        enableAssertionSigned.setType("hidden");
 
         Property enableEncAssert = new Property();
         enableEncAssert.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_ENCRYPTION);
@@ -202,7 +217,7 @@ public class GoToMeetingConfigs extends AbstractInboundAuthenticatorConfig {
         return new Property[]{issuer, appType, acsurls, acsindex, defaultacs, nameid, alias, signAlgo, digestAlgo,
                 enableSign, enableSigValidation, enableEncAssert, enableSLO, sloUrl, sloRequestURL, enableAtrProf,
                 enableDefaultAtrProf, enableAudienceRestriction, audiences, enableRecipients, receipients,
-                enableIDPSSO, enableIDPSLO, idpSLOUrls};
+                enableIDPSSO, enableIDPSLO, idpSLOUrls, enableAssertionSigned, certificate, metadata};
     }
 
     @Override

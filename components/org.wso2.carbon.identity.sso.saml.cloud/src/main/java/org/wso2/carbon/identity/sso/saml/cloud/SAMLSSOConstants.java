@@ -95,11 +95,14 @@ public class SAMLSSOConstants {
         public static final String SLO_RESPONSE_URL = "sloResponseURL";
         public static final String SLO_REQUEST_URL = "sloRequestURL";
         public static final String ALIAS = "alias";
+        public static final String METADATA = "metadata";
+        public static final String PUB_CERT = "publicCertificate";
         public static final String SIGN_ALGO = "signingAlgorithm";
         public static final String DIGEST_ALGO = "digestAlgorithm";
         public static final String ENABLE_RESPONSE_SIGNING = "enableResponseSignature";
         public static final String ENABLE_SIGNATURE_VALIDATION = "enableSigValidation";
         public static final String ENABLE_ASSERTION_ENCRYPTION = "enableEncAssertion";
+        public static final String ENABLE_ASSERTION_SIGNING = "enableAssertionSigned";
         public static final String ENABLE_RECIPIENTS = "enableRecipients";
         public static final String ENABLE_ATTR_PROF = "enableAttributeProfile";
         public static final String ENABLE_DEFAULT_ATTR_PROF = "enableDefaultAttributeProfile";

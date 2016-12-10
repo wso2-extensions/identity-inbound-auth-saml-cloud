@@ -27,16 +27,28 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>org.wso2.carbon.identity.sso.saml.cloud</artifactId>
+    <artifactId>org.wso2.carbon.identity.saml.listener</artifactId>
     <packaging>bundle</packaging>
-    <name>WSO2 Carbon - SAML Web Browser SSO Cloud</name>
-    <description>A custom wso2 products or solution</description>
+    <name>WSO2 Carbon - SAML Cloud Listener</name>
+    <description>Services for SAML Cloud</description>
     <url>http://www.wso2.com</url>
 
     <dependencies>
         <dependency>
+            <groupId>org.eclipse.osgi</groupId>
+            <artifactId>org.eclipse.osgi</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wso2.orbit.org.opensaml</groupId>
             <artifactId>opensaml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon</groupId>
+            <artifactId>org.wso2.carbon.logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon</groupId>
+            <artifactId>org.wso2.carbon.core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
@@ -57,10 +69,6 @@
             <artifactId>org.wso2.carbon.identity.core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wso2.carbon.identity</groupId>
             <artifactId>org.wso2.carbon.security.mgt</artifactId>
             <exclusions>
@@ -71,12 +79,12 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.logging</artifactId>
+            <groupId>org.wso2.carbon.identity</groupId>
+            <artifactId>org.wso2.carbon.identity.application.authentication.framework</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.identity</groupId>
-            <artifactId>org.wso2.carbon.identity.application.authentication.framework</artifactId>
+            <artifactId>org.wso2.carbon.identity.application.mgt</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents.wso2</groupId>
@@ -89,6 +97,14 @@
         <dependency>
             <groupId>org.wso2.orbit.org.owasp.encoder</groupId>
             <artifactId>encoder</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.inbound.auth.saml.cloud</groupId>
+            <artifactId>org.wso2.carbon.identity.sso.saml.cloud</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity</groupId>
+            <artifactId>org.wso2.carbon.identity.application.mgt</artifactId>
         </dependency>
     </dependencies>
 
@@ -106,7 +122,7 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
-                        <Private-Package>org.wso2.carbon.identity.sso.saml.cloud.internal</Private-Package>
+                        <Private-Package>org.wso2.carbon.identity.saml.listener.internal</Private-Package>
                         <Import-Package>
                             javax.cache,
                             javax.crypto.*,
@@ -158,10 +174,11 @@
                             version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.identity.authenticator.saml2.sso.common;
                             version="${carbon.identity.package.import.version.range}",
+                            org.wso2.carbon.identity.sso.saml.cloud; version="${project.version}";
                         </Import-Package>
                         <Export-Package>
-                            !org.wso2.carbon.identity.sso.saml.cloud.internal,
-                            org.wso2.carbon.identity.sso.saml.cloud.*;
+                            !org.wso2.carbon.identity.saml.listener.internal,
+                            org.wso2.carbon.identity.saml.listener.*;
                             version="${carbon.identity.package.export.version}",
                         </Export-Package>
                         <DynamicImport-Package>*</DynamicImport-Package>

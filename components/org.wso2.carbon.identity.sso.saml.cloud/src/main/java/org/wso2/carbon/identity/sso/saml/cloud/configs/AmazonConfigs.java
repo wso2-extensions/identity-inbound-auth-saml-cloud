@@ -84,6 +84,11 @@ public class AmazonConfigs extends AbstractInboundAuthenticatorConfig {
         nameid.setDisplayName("NameID format ");
         nameid.setType("hidden");
 
+        Property metadata = new Property();
+        metadata.setName(SAMLSSOConstants.SAMLFormFields.METADATA);
+        metadata.setDisplayName("Metadata File");
+        metadata.setType("hidden");
+
         Property signAlgo = new Property();
         signAlgo.setName(SAMLSSOConstants.SAMLFormFields.SIGN_ALGO);
         signAlgo.setDisplayName("Response Signing Algorithm ");
@@ -101,6 +106,16 @@ public class AmazonConfigs extends AbstractInboundAuthenticatorConfig {
         enableSign.setDisplayName("Enable Response Signing");
         enableSign.setValue("false");
         enableSign.setType("hidden");
+
+        Property certificate = new Property();
+        certificate.setName(SAMLSSOConstants.SAMLFormFields.PUB_CERT);
+        certificate.setDisplayName("Certificate");
+
+        Property enableAssertionSigned = new Property();
+        enableAssertionSigned.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_SIGNING);
+        enableAssertionSigned.setDisplayName("Enable Assertion Signing ");
+        enableAssertionSigned.setValue("true");
+        enableAssertionSigned.setType("hidden");
 
         Property enableEncAssert = new Property();
         enableEncAssert.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_ENCRYPTION);
@@ -154,7 +169,8 @@ public class AmazonConfigs extends AbstractInboundAuthenticatorConfig {
         idpSLOUrls.setType("hidden");
 
         return new Property[]{issuer, appType, acsurls, defaultacs, nameid, signAlgo, digestAlgo, enableSign,
-                enableEncAssert, enableAtrProf, acsindex, enableDefaultAtrProf, enableSigValidation, enableIDPSSO, enableIDPSLO, idpSLOUrls};
+                enableEncAssert, enableAtrProf, acsindex, enableDefaultAtrProf, enableSigValidation, enableIDPSSO,
+                enableIDPSLO, idpSLOUrls, enableAssertionSigned, certificate, metadata};
     }
 
     @Override
