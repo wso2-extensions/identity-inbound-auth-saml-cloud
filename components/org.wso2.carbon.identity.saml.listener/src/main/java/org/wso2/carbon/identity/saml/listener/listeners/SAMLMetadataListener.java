@@ -23,7 +23,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.base.ServerConfiguration;
 import org.wso2.carbon.context.CarbonContext;
-import org.wso2.carbon.core.util.KeyStoreManager;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
 import org.wso2.carbon.identity.application.common.model.InboundAuthenticationRequestConfig;
@@ -51,6 +50,7 @@ import java.util.Map;
 
 public class SAMLMetadataListener extends AbstractApplicationMgtListener {
 
+    public static final int SUPER_TENANT_ID = -1234;
     private Log log = LogFactory.getLog(SAMLMetadataListener.class);
 
     @Override
@@ -58,7 +58,8 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
         return 25;
     }
 
-    public boolean doPostUpdateApplication(ServiceProvider serviceProvider, String tenantDomain, String userName) throws IdentityApplicationManagementException {
+    public boolean doPostUpdateApplication(ServiceProvider serviceProvider, String tenantDomain, String userName)
+            throws IdentityApplicationManagementException {
         return true;
     }
 
@@ -96,7 +97,12 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
             String pemCert = properties.get(SAMLSSOConstants.SAMLFormFields.PUB_CERT).getValue();
             String issuer = properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER).getValue();
             if (pemCert != null && StringUtils.isNotBlank(pemCert)) {
-                addCertToKeyStore(serviceProvider.getApplicationName() + "_" + issuer, pemCert, tenantId, tenantDomain);
+                String alias = getAlias(serviceProvider.getApplicationName(), issuer);
+                Property aliasProperty = new Property();
+                aliasProperty.setName(SAMLSSOConstants.SAMLFormFields.ALIAS);
+                aliasProperty.setValue(alias);
+                properties.put(SAMLSSOConstants.SAMLFormFields.ALIAS, aliasProperty);
+                addCertToKeyStore(alias, pemCert, tenantId, tenantDomain);
             }
         }
         if (properties.get(SAMLSSOConstants.SAMLFormFields.METADATA) != null) {
@@ -109,26 +115,21 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
         return true;
     }
 
-    private void addCertToKeyStore(String alias,String pemCert,int tenantId, String tenantDomain) {
+    private void addCertToKeyStore(String alias, String pemCert, int tenantId, String tenantDomain) {
 
         KeyStoreAdminInterface keystore = new KeyStoreAdminServiceImpl();
         try {
-            if (tenantId != -1234) {// for tenants, load private key from their generated key store
-                keystore.importCertToStore(alias, pemCert, SAMLSSOUtil
-                        .generateKSNameFromDomainName(tenantDomain));
-            } else { // for super tenant, load the default pub. cert using the
-                // config. in carbon.xml
-                KeyStoreManager keyStoreManager = KeyStoreManager.getInstance(tenantId);
-
+            if (tenantId != SUPER_TENANT_ID) {// for tenants, load private key from their generated key store
+                keystore.importCertToStore(alias, pemCert, SAMLSSOUtil.generateKSNameFromDomainName(tenantDomain));
+            } else { // for super tenant, load the default pub. cert using the config. in carbon.xml
                 String keyStoreName = ServerConfiguration.getInstance().getFirstProperty("Security.KeyStore.Location");
                 String[] keyStorePath = keyStoreName.split("/");
                 keyStoreName = keyStorePath[keyStorePath.length - 1];
                 keystore.importCertToStore(alias, pemCert, keyStoreName);
             }
-
         } catch (SecurityConfigException e) {
             if (log.isDebugEnabled()) {
-                log.debug("Failed to import the cert in to the keystore.");
+                log.debug("Failed to import the cert in to the keystore.", e);
             }
         }
     }
@@ -137,6 +138,7 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
      * Adding SAML Confiuration by metadata file
      * Only possible in the initial step.
      * Updates should be done in the User Interface
+     *
      * @param serviceProvider
      * @param userName
      * @param tenantDomain
@@ -205,7 +207,7 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
         if (properties.get(SAMLSSOConstants.SAMLFormFields.ALIAS) != null) {
             properties.get(SAMLSSOConstants.SAMLFormFields.ALIAS).setValue(spName + "_" + samlConfigs.getCertAlias());
         }
-        addCertToKeyStore(samlConfigs.getCertAlias(),parser.getCertificate(),tenantId,tenantDomain);
+        addCertToKeyStore(samlConfigs.getCertAlias(), parser.getCertificate(), tenantId, tenantDomain);
         if (properties.get(SAMLSSOConstants.SAMLFormFields.ACS_URLS) != null) {
             properties.get(SAMLSSOConstants.SAMLFormFields.ACS_URLS).setValue(StringUtils.join(samlConfigs
                     .getAssertionConsumerUrls(), ","));
@@ -260,5 +262,10 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
             }
         }
         return ApplicationConstants.STANDARD_APPLICATION;
+    }
+
+    private String getAlias(String serviceProviderName, String issuer) {
+
+        return serviceProviderName + "_" + issuer;
     }
 }

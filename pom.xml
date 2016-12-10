@@ -45,6 +45,11 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>org.eclipse.osgi</groupId>
+                <artifactId>org.eclipse.osgi</artifactId>
+                <version>${equinox.osgi.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.orbit.org.opensaml</groupId>
                 <artifactId>opensaml</artifactId>
                 <version>${opensaml2.wso2.version}</version>
@@ -89,6 +94,16 @@
                 <groupId>org.wso2.carbon.identity</groupId>
                 <artifactId>org.wso2.carbon.identity.application.authentication.framework</artifactId>
                 <version>${carbon.identity.framework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity</groupId>
+                <artifactId>org.wso2.carbon.identity.application.mgt</artifactId>
+                <version>${carbon.identity.framework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.inbound.auth.saml.cloud</groupId>
+                <artifactId>org.wso2.carbon.identity.sso.saml.cloud</artifactId>
+                <version>${carbon.identity.sso.saml.cloud.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents.wso2</groupId>
@@ -253,6 +268,7 @@
         <carbon.kernel.version>4.4.7</carbon.kernel.version>
         <carbon.identity.framework.version>5.2.2</carbon.identity.framework.version>
         <carbon.identity.package.export.version>${project.version}</carbon.identity.package.export.version>
+        <carbon.identity.sso.saml.cloud.version>${project.version}</carbon.identity.sso.saml.cloud.version>
 
         <httpcore.version>4.3.3.wso2v1</httpcore.version>
         <httpcomponents-httpclient.wso2.version>4.3.1.wso2v2</httpcomponents-httpclient.wso2.version>
@@ -272,6 +288,7 @@
         <carbon.kernel.registry.imp.pkg.version>[1.0.1, 2.0.0)</carbon.kernel.registry.imp.pkg.version>
         <carbon.identity.package.import.version.range>[5.0.0, 6.0.0)</carbon.identity.package.import.version.range>
 
+        <equinox.osgi.version>3.9.1.v20130814-1242</equinox.osgi.version>
         <osgi.service.http.imp.pkg.version.range>[1.2.1, 2.0.0)</osgi.service.http.imp.pkg.version.range>
         <osgi.util.tracker.imp.pkg.version.range>[1.5.1, 2.0.0)</osgi.util.tracker.imp.pkg.version.range>
         <osgi.framework.imp.pkg.version.range>[1.7.0, 2.0.0)</osgi.framework.imp.pkg.version.range>
