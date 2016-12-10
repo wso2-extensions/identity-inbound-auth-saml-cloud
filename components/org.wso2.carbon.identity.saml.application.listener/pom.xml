@@ -27,7 +27,7 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>org.wso2.carbon.identity.saml.listener</artifactId>
+    <artifactId>org.wso2.carbon.identity.saml.application.listener</artifactId>
     <packaging>bundle</packaging>
     <name>WSO2 Carbon - SAML Cloud Listener</name>
     <description>Services for SAML Cloud</description>
@@ -106,6 +106,14 @@
             <groupId>org.wso2.carbon.identity</groupId>
             <artifactId>org.wso2.carbon.identity.application.mgt</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.metadata.saml2</groupId>
+            <artifactId>org.wso2.carbon.identity.sp.metadata.saml2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec.wso2</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -122,7 +130,7 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
-                        <Private-Package>org.wso2.carbon.identity.saml.listener.internal</Private-Package>
+                        <Private-Package>org.wso2.carbon.identity.saml.application.listener.internal</Private-Package>
                         <Import-Package>
                             javax.cache,
                             javax.crypto.*,
@@ -177,8 +185,8 @@
                             org.wso2.carbon.identity.sso.saml.cloud; version="${project.version}";
                         </Import-Package>
                         <Export-Package>
-                            !org.wso2.carbon.identity.saml.listener.internal,
-                            org.wso2.carbon.identity.saml.listener.*;
+                            !org.wso2.carbon.identity.saml.application.listener.internal,
+                            org.wso2.carbon.identity.saml.application.listener.*;
                             version="${carbon.identity.package.export.version}",
                         </Export-Package>
                         <DynamicImport-Package>*</DynamicImport-Package>

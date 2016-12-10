@@ -1,11 +1,11 @@
-package org.wso2.carbon.identity.saml.listener.internal;
+package org.wso2.carbon.identity.saml.application.listener.internal;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.identity.application.mgt.listener.ApplicationMgtListener;
-import org.wso2.carbon.identity.saml.listener.listeners.SAMLMetadataListener;
+import org.wso2.carbon.identity.saml.application.listener.listeners.SAMLMetadataListener;
 
 /**
  * @scr.component name="identity.saml.listener.component" immediate="true"
