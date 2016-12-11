@@ -220,7 +220,8 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
             setSAMLConfigs(properties, samlssoServiceProviderDO, parser.getCertificate(), tenantDomain);
         } catch (IdentityApplicationManagementException e) {
             if (log.isDebugEnabled()) {
-                log.debug("Failed to add the authenticator properties for the Service Provider " + serviceProviderName);
+                log.debug("Failed to add the authenticator properties for the Service Provider " +
+                        serviceProviderName, e);
             }
             return false;
         }
