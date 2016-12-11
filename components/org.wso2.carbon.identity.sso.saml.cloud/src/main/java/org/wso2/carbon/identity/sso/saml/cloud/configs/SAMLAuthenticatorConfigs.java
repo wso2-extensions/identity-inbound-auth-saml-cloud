@@ -85,7 +85,6 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
         Property certificate = new Property();
         certificate.setName(SAMLSSOConstants.SAMLFormFields.PUB_CERT);
         certificate.setDisplayName("Certificate");
-        certificate.setType("hidden");
 
         Property metadata = new Property();
         metadata.setName(SAMLSSOConstants.SAMLFormFields.METADATA);
@@ -114,7 +113,6 @@ public class SAMLAuthenticatorConfigs extends AbstractInboundAuthenticatorConfig
         enableSigValidation.setDisplayName("Enable Signature Validation in Authentication Requests and Logout " +
                 "Requests");
         enableSigValidation.setValue("false");
-        enableSigValidation.setType("hidden");
 
         Property enableAssertionSigned = new Property();
         enableAssertionSigned.setName(SAMLSSOConstants.SAMLFormFields.ENABLE_ASSERTION_SIGNING);
