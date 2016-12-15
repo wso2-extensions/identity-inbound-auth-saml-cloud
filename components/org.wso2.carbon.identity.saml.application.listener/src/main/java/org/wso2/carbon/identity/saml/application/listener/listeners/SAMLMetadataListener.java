@@ -82,7 +82,7 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
         Map<String, Property> properties = new HashMap<>();
         for (Property property : authnConfig.getProperties()) {
             if (StringUtils.equals(property.getName(), SAMLSSOConstants.SAMLFormFields.METADATA) && StringUtils
-                    .isNotBlank(property.getValue())) {
+                    .isNotBlank(property.getValue()) && !"undefined".equalsIgnoreCase(property.getValue())) {
                 //metadata given
                 metadataProvided = true;
             }
@@ -311,17 +311,21 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
                     .getDefaultAssertionConsumerUrl());
         }
 
-        try {
-            addCertToKeyStore(samlssoServiceProviderDO.getCertAlias(), certificate, tenantDomain);
-            if (properties.get(SAMLSSOConstants.SAMLFormFields.ALIAS) != null) {
-                properties.get(SAMLSSOConstants.SAMLFormFields.ALIAS).setValue(samlssoServiceProviderDO.getCertAlias());
-            }
-
-        } catch (SecurityConfigException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Failed to add provided certificate to the key store", e);
+        String pemCert = properties.get(SAMLSSOConstants.SAMLFormFields.PUB_CERT).getValue();
+        if (pemCert != null && StringUtils.isNotBlank(pemCert) && !"undefined".equalsIgnoreCase(pemCert)) {
+            try {
+                addCertToKeyStore(samlssoServiceProviderDO.getCertAlias(), certificate, tenantDomain);
+                if (properties.get(SAMLSSOConstants.SAMLFormFields.ALIAS) != null) {
+                    properties.get(SAMLSSOConstants.SAMLFormFields.ALIAS).setValue(samlssoServiceProviderDO
+                            .getCertAlias());
+                }
+            } catch (SecurityConfigException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Failed to add provided certificate to the key store", e);
+                }
             }
         }
+
         if (properties.get(SAMLSSOConstants.SAMLFormFields.ACS_URLS) != null) {
             properties.get(SAMLSSOConstants.SAMLFormFields.ACS_URLS).setValue(StringUtils.join
                     (samlssoServiceProviderDO.getAssertionConsumerUrls(), ","));
