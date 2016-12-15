@@ -508,16 +508,20 @@ public class SAMLSSOUtil {
                     "Error occurred while retrieving Resident Identity Provider information for tenant " +
                             tenantDomain, e);
         }
+
         FederatedAuthenticatorConfig[] authnConfigs = identityProvider.getFederatedAuthenticatorConfigs();
-        destinationURLs.addAll(IdentityApplicationManagementUtil.getPropertyValuesForNameStartsWith(authnConfigs,
+        for (String value: IdentityApplicationManagementUtil.getPropertyValuesForNameStartsWith(authnConfigs,
                 IdentityApplicationConstants.Authenticator.SAML2SSO.NAME, IdentityApplicationConstants.Authenticator
-                        .SAML2SSO.DESTINATION_URL_PREFIX));
+                        .SAML2SSO.SSO_URL)) {
+            destinationURLs.add(getTenantModeURL(value, tenantDomain));
+        }
+
         if (destinationURLs.size() == 0) {
             String configDestination = IdentityUtil.getProperty(IdentityConstants.ServerConfig.SSO_IDP_CLOUD_URL);
             if (StringUtils.isBlank(configDestination)) {
                 configDestination = IdentityUtil.getServerURL(SAMLSSOConstants.IDENTITY_URL, true, true);
             }
-            destinationURLs.add(configDestination);
+            destinationURLs.add(getTenantModeURL(configDestination, tenantDomain));
         }
 
         return destinationURLs;
@@ -1304,5 +1308,24 @@ public class SAMLSSOUtil {
         } else {
             return 5;
         }
+    }
+
+    /**
+     * This method constructs the tenant specific URL from the given URL appending /t/<tenant-domain>
+     * This was added because IdP URLs returned from the resident IdP does not capture tenant information.
+     * This should be removed once IdP captures the tenant in IdP URLs
+     *
+     * @param url url to be modified
+     * @param tenantDomain tenant domain
+     * @return <URL>/t/<tenant-domain>
+     */
+    public static String getTenantModeURL (String url, String tenantDomain) {
+
+        if (MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(tenantDomain)) {
+            return url;
+        }
+
+        String tenantURLPath = "/t/" + tenantDomain;
+        return url.concat(tenantURLPath);
     }
 }
