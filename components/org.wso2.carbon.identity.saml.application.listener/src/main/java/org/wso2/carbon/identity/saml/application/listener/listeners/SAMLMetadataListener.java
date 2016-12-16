@@ -82,7 +82,7 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
         Map<String, Property> properties = new HashMap<>();
         for (Property property : authnConfig.getProperties()) {
             if (StringUtils.equals(property.getName(), SAMLSSOConstants.SAMLFormFields.METADATA) && StringUtils
-                    .isNotBlank(property.getValue()) && !"undefined".equalsIgnoreCase(property.getValue())) {
+                    .isNotBlank(property.getValue())) {
                 //metadata given
                 metadataProvided = true;
             }
@@ -311,8 +311,7 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
                     .getDefaultAssertionConsumerUrl());
         }
 
-        String pemCert = properties.get(SAMLSSOConstants.SAMLFormFields.PUB_CERT).getValue();
-        if (pemCert != null && StringUtils.isNotBlank(pemCert) && !"undefined".equalsIgnoreCase(pemCert)) {
+        if (certificate != null && StringUtils.isNotBlank(certificate)) {
             try {
                 addCertToKeyStore(samlssoServiceProviderDO.getCertAlias(), certificate, tenantDomain);
                 if (properties.get(SAMLSSOConstants.SAMLFormFields.ALIAS) != null) {
