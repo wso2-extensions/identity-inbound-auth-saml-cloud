@@ -89,6 +89,24 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
             properties.put(property.getName(), property);
         }
 
+        Property issuerProperty = properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER);
+        if (issuerProperty == null || StringUtils.isBlank(issuerProperty.getValue())) {
+            throw new IdentityApplicationManagementException("Missing mandatory field 'issuer' in inbound " +
+                    "authentication configuration properties.");
+        }
+
+        ApplicationManagementService appInfo = ApplicationManagementService.getInstance();
+        ServiceProvider existingServiceProvider = appInfo.getServiceProviderByClientId(issuerProperty.getValue(),
+                SAMLSSOConstants.SAMLFormFields.SAML_SSO, tenantDomain);
+
+        if (existingServiceProvider != null && !IdentityApplicationConstants.DEFAULT_SP_CONFIG.equals
+                (existingServiceProvider.getApplicationName()) && !(existingServiceProvider.getApplicationID() ==
+                serviceProvider.getApplicationID())) {
+            throw new IdentityApplicationManagementException("An application with the issuer name " + issuerProperty
+                    .getValue() + " already exists.");
+        }
+
+
         if (metadataProvided) {
 
             if (log.isDebugEnabled()) {
