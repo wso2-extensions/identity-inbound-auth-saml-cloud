@@ -98,6 +98,14 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
         } else {
 
             Property issuerProperty = properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER);
+            if (issuerProperty == null || StringUtils.isBlank(issuerProperty.getValue())) {
+                if (log.isDebugEnabled()) {
+                    log.debug("No SAML issuer found.");
+                }
+
+                return false;
+            }
+
             validateIssuer(serviceProvider, tenantDomain, issuerProperty);
 
             String pemCert = properties.get(SAMLSSOConstants.SAMLFormFields.PUB_CERT).getValue();
@@ -278,6 +286,11 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
             issuerProperty.setValue(samlssoServiceProviderDO.getIssuer());
         }
 
+        if (StringUtils.isBlank(issuerProperty.getValue())) {
+            throw new IdentityApplicationManagementException("Missing mandatory field 'issuer' in inbound " +
+                    "authentication configuration properties.");
+        }
+
         validateIssuer(serviceProvider, tenantDomain, issuerProperty);
         setSAMLConfigs(properties, samlssoServiceProviderDO, parser.getCertificate(), tenantDomain);
     }
@@ -348,11 +361,6 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
 
     private void validateIssuer(ServiceProvider serviceProvider, String tenantDomain, Property issuerProperty) throws
             IdentityApplicationManagementException {
-
-        if (issuerProperty == null || StringUtils.isBlank(issuerProperty.getValue())) {
-            throw new IdentityApplicationManagementException("Missing mandatory field 'issuer' in inbound " +
-                    "authentication configuration properties.");
-        }
 
         ApplicationManagementService appInfo = ApplicationManagementService.getInstance();
         ServiceProvider existingServiceProvider = appInfo.getServiceProviderByClientId(issuerProperty.getValue(),
