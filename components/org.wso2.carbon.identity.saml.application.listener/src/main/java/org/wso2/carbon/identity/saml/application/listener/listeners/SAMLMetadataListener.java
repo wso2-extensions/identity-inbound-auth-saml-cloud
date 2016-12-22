@@ -89,43 +89,27 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
             properties.put(property.getName(), property);
         }
 
-        Property issuerProperty = properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER);
-        if (issuerProperty == null || StringUtils.isBlank(issuerProperty.getValue())) {
-            throw new IdentityApplicationManagementException("Missing mandatory field 'issuer' in inbound " +
-                    "authentication configuration properties.");
-        }
-
-        ApplicationManagementService appInfo = ApplicationManagementService.getInstance();
-        ServiceProvider existingServiceProvider = appInfo.getServiceProviderByClientId(issuerProperty.getValue(),
-                SAMLSSOConstants.SAMLFormFields.SAML_SSO, tenantDomain);
-
-        if (existingServiceProvider != null && !IdentityApplicationConstants.DEFAULT_SP_CONFIG.equals
-                (existingServiceProvider.getApplicationName()) && !(existingServiceProvider.getApplicationID() ==
-                serviceProvider.getApplicationID())) {
-            throw new IdentityApplicationManagementException("An application with the issuer name " + issuerProperty
-                    .getValue() + " already exists.");
-        }
-
-
         if (metadataProvided) {
 
             if (log.isDebugEnabled()) {
                 log.debug("Meta data file uploaded. Updating Service Provider with metadata.");
             }
-            updateServiceProviderInboundAuthConfigs(serviceProvider, tenantDomain, authnConfig, properties);
+            updateServiceProviderInboundAuthConfigs(serviceProvider, tenantDomain, properties);
         } else {
 
+            Property issuerProperty = properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER);
+            validateIssuer(serviceProvider, tenantDomain, issuerProperty);
+
             String pemCert = properties.get(SAMLSSOConstants.SAMLFormFields.PUB_CERT).getValue();
-            if (pemCert != null && StringUtils.isNotBlank(pemCert) && !"undefined".equalsIgnoreCase(pemCert)) {
+            if (pemCert != null && StringUtils.isNotBlank(pemCert)) {
 
                 if (log.isDebugEnabled()) {
                     log.debug("Service Provider certificate provided. Adding certificate to the key store.");
                 }
 
-                String issuer = properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER).getValue();
                 try {
                     // Add certificate to key store
-                    addCertToKeyStore(issuer, pemCert, tenantDomain);
+                    addCertToKeyStore(issuerProperty.getValue(), pemCert, tenantDomain);
 
                     // If certificate is added successfully set the alias property
                     Property aliasProperty = properties.get(SAMLSSOConstants.SAMLFormFields.ALIAS);
@@ -136,7 +120,7 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
                         properties.put(SAMLSSOConstants.SAMLFormFields.ALIAS, aliasProperty);
                     }
 
-                    aliasProperty.setValue(issuer);
+                    aliasProperty.setValue(issuerProperty.getValue());
                 } catch (SecurityConfigException e) {
                     if (log.isDebugEnabled()) {
                         log.debug("Failed to add provided certificate to the key store", e);
@@ -258,67 +242,44 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
      *
      * @param serviceProvider
      * @param tenantDomain
-     * @param authnConfig
      * @param properties
      * @return
      */
-    private boolean updateServiceProviderInboundAuthConfigs(ServiceProvider serviceProvider, String tenantDomain,
-                                                            InboundAuthenticationRequestConfig authnConfig,
-                                                            Map<String, Property> properties) {
+    private void updateServiceProviderInboundAuthConfigs(ServiceProvider serviceProvider, String tenantDomain,
+                                                         Map<String, Property> properties) throws
+            IdentityApplicationManagementException {
 
         String serviceProviderName = serviceProvider.getApplicationName();
+
+        String fileContent = properties.get(SAMLSSOConstants.SAMLFormFields.METADATA).getValue();
+        SAMLMetadataParser parser = new SAMLMetadataParser();
+        SAMLSSOServiceProviderDO samlssoServiceProviderDO = new SAMLSSOServiceProviderDO();
         try {
-            if (serviceProvider == null || authnConfig == null) {
-                return false;
-            }
-
-            String fileContent = properties.get(SAMLSSOConstants.SAMLFormFields.METADATA).getValue();
-            ApplicationManagementService appInfo = ApplicationManagementService.getInstance();
-            SAMLMetadataParser parser = new SAMLMetadataParser();
-            SAMLSSOServiceProviderDO samlssoServiceProviderDO = new SAMLSSOServiceProviderDO();
-            try {
-                samlssoServiceProviderDO = parser.parse(new String(Base64.decodeBase64(fileContent)),
-                        samlssoServiceProviderDO);
-            } catch (InvalidMetadataException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Failed to parse metadata of the Service Provider " + serviceProviderName);
-                }
-                return false;
-            }
-
-            //checking whether the service provider has a issuer.
-            //If there is no issuer added new issuer will be added
-
-            if (properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER) == null || StringUtils.isBlank(properties.get
-                    (SAMLSSOConstants.SAMLFormFields.ISSUER).getValue())) {
-                //initiate SAML Configs
-                Property issuerProperty = properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER);
-                if (issuerProperty == null) {
-                    issuerProperty = new Property();
-                    issuerProperty.setName(SAMLSSOConstants.SAMLFormFields.ISSUER);
-                    issuerProperty.setDisplayName("Issuer");
-                    properties.put(SAMLSSOConstants.SAMLFormFields.ISSUER, issuerProperty);
-                }
-                issuerProperty.setValue(samlssoServiceProviderDO.getIssuer());
-            } else {
-                ServiceProvider spWithIssuer = appInfo.getServiceProviderByClientId(samlssoServiceProviderDO
-                        .getIssuer(), SAMLSSOConstants.SAMLFormFields.SAML_SSO, tenantDomain);
-                if (spWithIssuer != null && !StringUtils.equals(spWithIssuer.getApplicationName(),
-                        IdentityApplicationConstants.DEFAULT_SP_CONFIG) && spWithIssuer.getApplicationID() !=
-                        serviceProvider.getApplicationID()) {
-                    return false;
-                }
-            }
-
-            setSAMLConfigs(properties, samlssoServiceProviderDO, parser.getCertificate(), tenantDomain);
-        } catch (IdentityApplicationManagementException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Failed to add the authenticator properties for the Service Provider " +
-                        serviceProviderName, e);
-            }
-            return false;
+            samlssoServiceProviderDO = parser.parse(new String(Base64.decodeBase64(fileContent)),
+                    samlssoServiceProviderDO);
+        } catch (InvalidMetadataException e) {
+            throw new IdentityApplicationManagementException("Failed to parse metadata of the Service Provider " +
+                    serviceProviderName);
         }
-        return true;
+
+        //checking whether the service provider has a issuer.
+        //If there is no issuer added new issuer will be added
+
+        Property issuerProperty = properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER);
+        if (issuerProperty == null || StringUtils.isBlank(issuerProperty.getValue())) {
+            //initiate SAML Configs
+            issuerProperty = properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER);
+            if (issuerProperty == null) {
+                issuerProperty = new Property();
+                issuerProperty.setName(SAMLSSOConstants.SAMLFormFields.ISSUER);
+                issuerProperty.setDisplayName("Issuer");
+                properties.put(SAMLSSOConstants.SAMLFormFields.ISSUER, issuerProperty);
+            }
+            issuerProperty.setValue(samlssoServiceProviderDO.getIssuer());
+        }
+
+        validateIssuer(serviceProvider, tenantDomain, issuerProperty);
+        setSAMLConfigs(properties, samlssoServiceProviderDO, parser.getCertificate(), tenantDomain);
     }
 
     private void setSAMLConfigs(Map<String, Property> properties, SAMLSSOServiceProviderDO samlssoServiceProviderDO,
@@ -382,6 +343,26 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
         if (properties.get(SAMLSSOConstants.SAMLFormFields.SLO_REQUEST_URL) != null) {
             properties.get(SAMLSSOConstants.SAMLFormFields.SLO_REQUEST_URL).setValue(samlssoServiceProviderDO
                     .getSloResponseURL());
+        }
+    }
+
+    private void validateIssuer(ServiceProvider serviceProvider, String tenantDomain, Property issuerProperty) throws
+            IdentityApplicationManagementException {
+
+        if (issuerProperty == null || StringUtils.isBlank(issuerProperty.getValue())) {
+            throw new IdentityApplicationManagementException("Missing mandatory field 'issuer' in inbound " +
+                    "authentication configuration properties.");
+        }
+
+        ApplicationManagementService appInfo = ApplicationManagementService.getInstance();
+        ServiceProvider existingServiceProvider = appInfo.getServiceProviderByClientId(issuerProperty.getValue(),
+                SAMLSSOConstants.SAMLFormFields.SAML_SSO, tenantDomain);
+
+        if (existingServiceProvider != null && !IdentityApplicationConstants.DEFAULT_SP_CONFIG.equals
+                (existingServiceProvider.getApplicationName()) && !(existingServiceProvider.getApplicationID() ==
+                serviceProvider.getApplicationID())) {
+            throw new IdentityApplicationManagementException("An application with the issuer name " + issuerProperty
+                    .getValue() + " already exists.");
         }
     }
 
