@@ -98,12 +98,12 @@ public class SAMLMetadataListener extends AbstractApplicationMgtListener {
         } else {
 
             Property issuerProperty = properties.get(SAMLSSOConstants.SAMLFormFields.ISSUER);
-            if (issuerProperty == null || StringUtils.isBlank(issuerProperty.getValue())) {
+            if (issuerProperty == null || StringUtils.isBlank(issuerProperty.getValue())) { // Not SAML SP
                 if (log.isDebugEnabled()) {
                     log.debug("No SAML issuer found.");
                 }
 
-                return false;
+                return true;
             }
 
             validateIssuer(serviceProvider, tenantDomain, issuerProperty);
