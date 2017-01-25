@@ -281,7 +281,7 @@
         <carbon.identity.framework.version>5.2.2</carbon.identity.framework.version>
         <carbon.identity.package.export.version>${project.version}</carbon.identity.package.export.version>
         <carbon.identity.sso.saml.cloud.version>${project.version}</carbon.identity.sso.saml.cloud.version>
-        <carbon.identity.metadata.saml2.version>1.0.0-SNAPSHOT</carbon.identity.metadata.saml2.version>
+        <carbon.identity.metadata.saml2.version>0.5.0</carbon.identity.metadata.saml2.version>
 
         <httpcore.version>4.3.3.wso2v1</httpcore.version>
         <httpcomponents-httpclient.wso2.version>4.3.1.wso2v2</httpcomponents-httpclient.wso2.version>
