@@ -65,7 +65,7 @@ public class NetSuiteConfigs extends AbstractInboundAuthenticatorConfig {
 
         Property defaultacs = new Property();
         defaultacs.setName(SAMLSSOConstants.SAMLFormFields.DEFAULT_ACS);
-        defaultacs.setValue("https://system.netsuite.com/saml2/acs");
+        defaultacs.setValue("https://system.na1.netsuite.com/saml2/acs");
         defaultacs.setDisplayName("Default Assertion Consumer URL");
         defaultacs.setType("hidden");
 
