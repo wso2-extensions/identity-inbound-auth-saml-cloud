@@ -117,11 +117,6 @@ public class SAMLLogoutResponse extends SAMLResponse {
             response.setStatus(buildStatus(SAMLSSOConstants.StatusCodes.SUCCESS_CODE, null));
             response.setVersion(SAMLVersion.VERSION_20);
 
-//            if (serviceProviderDO.isDoSignResponse()) {
-//                SAMLSSOUtil.setSignature(response, serviceProviderDO.getSigningAlgorithmUri(), serviceProviderDO
-//                        .getDigestAlgorithmUri(), new SignKeyDataHolder(messageContext.getAuthenticationResult()
-//                        .getSubject().getAuthenticatedSubjectIdentifier()));
-//            }
             this.setResponse(response);
             String respString = SAMLSSOUtil.encode(SAMLSSOUtil.marshall(response));
             this.setRespString(respString);

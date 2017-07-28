@@ -106,17 +106,6 @@ public abstract class AuthnRequestProcessor extends IdentityProcessor {
             IdentityMessageContext context) {
         IdentityRequest identityRequest = context.getRequest();
         Map parameterMap = identityRequest.getParameterMap();
-//        SAMLSSOServiceProviderDO serviceProvider = null;
-//        try {
-//            serviceProvider = SAMLSSOUtil.loadSAMLSSOServiceProviderDO((SAMLMessageContext) context);
-//        } catch (IdentityApplicationManagementException e) {
-//            throw FrameworkRuntimeException.error("Error occurred while loading sp details from db" +
-//                                                  this.getCallbackPath(context), e);
-//        }
-//        String sloResponseURL = serviceProvider.getSloResponseURL();
-//        if (StringUtils.isEmpty(sloResponseURL)) {
-//            sloResponseURL = serviceProvider.getDefaultAssertionConsumerUrl();
-//        }
         AuthenticationRequest authenticationRequest = new AuthenticationRequest();
         authenticationRequest.appendRequestQueryParams(parameterMap);
         for (Object entry : identityRequest.getHeaderMap().keySet()) {

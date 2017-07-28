@@ -79,6 +79,11 @@ public class SPInitAuthHandler extends AuthHandler {
             builder = new SAMLLogoutResponse.SAMLLogoutResponseBuilder(messageContext);
             String sessionDataKey = identityRequest.getParameter(SAMLSSOConstants.SESSION_DATA_KEY);
             SAMLSSOSessionDTO sessionDTO = getSessionDataFromCache(sessionDataKey);
+
+            if (sessionDTO == null) {
+                throw new FrameworkException("Session not found in the cache.");
+            }
+
             SAMLSSOReqValidationResponseDTO validationResponseDTO = sessionDTO.getValidationRespDTO();
 
             if (validationResponseDTO != null) {
@@ -197,6 +202,11 @@ public class SPInitAuthHandler extends AuthHandler {
         SSOSessionPersistenceManager ssoSessionPersistenceManager =
                 SSOSessionPersistenceManager.getPersistenceManager();
         String sessionIndex = ssoSessionPersistenceManager.getSessionIndexFromTokenId(sessionId);
+
+        if (StringUtils.isEmpty(sessionIndex)) {
+            return new ArrayList<>();
+        }
+
         SessionInfoData sessionInfoData = ssoSessionPersistenceManager.getSessionInfo(sessionIndex);
         Map<String, SAMLSSOServiceProviderDO> sessionsList = sessionInfoData
                 .getServiceProviderList();
