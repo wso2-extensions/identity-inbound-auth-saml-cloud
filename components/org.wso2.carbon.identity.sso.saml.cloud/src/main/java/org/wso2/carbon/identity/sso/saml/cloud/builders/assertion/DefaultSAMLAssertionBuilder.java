@@ -54,18 +54,34 @@ import org.opensaml.saml2.core.impl.SubjectConfirmationBuilder;
 import org.opensaml.saml2.core.impl.SubjectConfirmationDataBuilder;
 import org.opensaml.xml.schema.XSString;
 import org.opensaml.xml.schema.impl.XSStringBuilder;
+import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityRequest;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticationResult;
 import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.model.SAMLSSOServiceProviderDO;
 import org.wso2.carbon.identity.core.util.IdentityCoreConstants;
+import org.wso2.carbon.identity.sso.saml.SAMLSSOService;
+import org.wso2.carbon.identity.sso.saml.cache.SessionDataCache;
+import org.wso2.carbon.identity.sso.saml.cache.SessionDataCacheEntry;
+import org.wso2.carbon.identity.sso.saml.cache.SessionDataCacheKey;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.builders.SignKeyDataHolder;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
+import org.wso2.carbon.identity.sso.saml.dto.QueryParamDTO;
+import org.wso2.carbon.identity.sso.saml.dto.SAMLSSOReqValidationResponseDTO;
+import org.wso2.carbon.identity.sso.saml.dto.SAMLSSOSessionDTO;
+import org.wso2.carbon.identity.sso.saml.session.SSOSessionPersistenceManager;
+import org.wso2.carbon.registry.core.utils.UUIDGenerator;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
+import static org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil.getTokenIdCookie;
 
 public class DefaultSAMLAssertionBuilder implements SAMLAssertionBuilder {
 
@@ -143,8 +159,33 @@ public class DefaultSAMLAssertionBuilder implements SAMLAssertionBuilder {
             authCtxClassRef.setAuthnContextClassRef(AuthnContext.PASSWORD_AUTHN_CTX);
             authContext.setAuthnContextClassRef(authCtxClassRef);
             authStmt.setAuthnContext(authContext);
+
+            SSOSessionPersistenceManager sessionPersistenceManager =
+                    SSOSessionPersistenceManager.getPersistenceManager();
+            String sessionIndexId;
+
+            Cookie ssoTokenIdCookie = getTokenIdCookie(context);
+            if (ssoTokenIdCookie != null) {
+                sessionId = ssoTokenIdCookie.getValue();
+            }
+            if (sessionId == null) {
+                sessionId = UUIDGenerator.generateUUID();
+            }
+            if (sessionId != null && sessionPersistenceManager.isExistingTokenId(sessionId)) {
+                sessionIndexId = sessionPersistenceManager.getSessionIndexFromTokenId(sessionId);
+            } else {
+                sessionIndexId = UUIDGenerator.generateUUID();
+                sessionPersistenceManager.persistSession(sessionId, sessionIndexId);
+            }
             if (samlssoServiceProviderDO.isDoSingleLogout()) {
                 authStmt.setSessionIndex(sessionId);
+                addSessionToCache(context, sessionId);
+                sessionPersistenceManager.persistSession(sessionIndexId,
+                                                         context.getAuthenticationResult().getSubject()
+                                                                .getAuthenticatedSubjectIdentifier(),
+                                                         context.getSamlssoServiceProviderDO(),
+                                                         context.getRpSessionId(), context.getIssuer(),
+                                                         context.getAssertionConsumerURL());
             }
             samlAssertion.getAuthnStatements().add(authStmt);
 
@@ -190,6 +231,53 @@ public class DefaultSAMLAssertionBuilder implements SAMLAssertionBuilder {
             throw IdentityException.error(
                     "Error when reading claim values for generating SAML Response", e);
         }
+    }
+
+    private void addSessionToCache(SAMLMessageContext context, String sessionId) throws IdentityException {
+        SessionDataCacheKey cacheKey = new SessionDataCacheKey(sessionId);
+        SessionDataCacheEntry cacheEntry = new SessionDataCacheEntry();
+        SAMLSSOSessionDTO sessionDTO = createSamlssoSessionDTO(context, sessionId);
+        cacheEntry.setSessionDTO(sessionDTO);
+        SessionDataCache.getInstance().addToCache(cacheKey, cacheEntry);
+    }
+
+    private SAMLSSOSessionDTO createSamlssoSessionDTO(SAMLMessageContext context, String sessionId)
+            throws IdentityException {
+        SAMLSSOSessionDTO sessionDTO = new SAMLSSOSessionDTO();
+        sessionDTO.setHttpQueryString(context.getRequest().getQueryString());
+        sessionDTO.setRelayState(context.getRelayState());
+        sessionDTO.setSessionId(sessionId);
+        sessionDTO.setLogoutReq(true);
+        sessionDTO.setInvalidLogout(false);
+        sessionDTO.setDestination(context.getDestination());
+        sessionDTO.setIssuer(context.getIssuer());
+        sessionDTO.setRequestID(context.getId());
+        sessionDTO.setSubject(context.getSubject());
+        sessionDTO.setRelyingPartySessionId(context.getRpSessionId());
+        sessionDTO.setAssertionConsumerURL(context.getAssertionConsumerURL());
+        sessionDTO.setTenantDomain(context.getTenantDomain());
+        SAMLSSOService samlSSOService = new SAMLSSOService();
+        String slo = context.getRequest().getParameter(SAMLSSOConstants.QueryParameter.SLO.toString());
+        SAMLSSOReqValidationResponseDTO signInRespDTO;
+        if (context.isIdpInitSSO()) {
+            signInRespDTO = samlSSOService.validateIdPInitSSORequest(
+                    context.getRelayState(), context.getRequest().getQueryString(),
+                    getQueryParams(context.getRequest()), SAMLSSOUtil.getDefaultLogoutEndpoint(), sessionId,
+                    context.getRpSessionId(), context.getRequest().getParameter(SAMLSSOConstants.AUTH_MODE),
+                    (slo != null));
+        } else {
+            String samlRequest = context.getRequest().getParameter(SAMLSSOConstants.SAML_REQUEST);
+            signInRespDTO = samlSSOService.validateSPInitSSORequest(
+                    samlRequest, context.getRequest().getQueryString(), sessionId, context.getRpSessionId(),
+                    context.getRequest().getParameter(SAMLSSOConstants.AUTH_MODE), false);
+        }
+        sessionDTO.setValidationRespDTO(signInRespDTO);
+        sessionDTO.setRequestMessageString(signInRespDTO.getRequestMessageString());
+        sessionDTO.setPassiveAuth(context.isPassive());
+        sessionDTO.setIdPInitSSO(context.isIdpInitSSO());
+        sessionDTO.setAttributeConsumingServiceIndex(context.getAttributeConsumingServiceIndex());
+        sessionDTO.setForceAuth(signInRespDTO.isForceAuthn());
+        return sessionDTO;
     }
 
     private AttributeStatement buildAttributeStatement(Map<String, String> claims) {
@@ -245,5 +333,16 @@ public class DefaultSAMLAssertionBuilder implements SAMLAssertionBuilder {
         } else {
             return null;
         }
+    }
+
+    private QueryParamDTO[] getQueryParams(IdentityRequest request) {
+
+        List<QueryParamDTO> queryParamDTOs =  new ArrayList<>();
+        for(SAMLSSOConstants.QueryParameter queryParameter : SAMLSSOConstants.QueryParameter.values()) {
+            queryParamDTOs.add(new QueryParamDTO(queryParameter.toString(),
+                                                 request.getParameter(queryParameter.toString())));
+        }
+
+        return queryParamDTOs.toArray(new QueryParamDTO[queryParamDTOs.size()]);
     }
 }

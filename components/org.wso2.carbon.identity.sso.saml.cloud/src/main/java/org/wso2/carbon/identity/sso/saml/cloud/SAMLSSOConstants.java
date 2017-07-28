@@ -52,6 +52,7 @@ public class SAMLSSOConstants {
     public static final String AUTH_FAILURE_MSG = "authFailureMsg";
     public static final String SAMLSSOServiceClient = "ssoServiceClient";
     public static final String SESSION_DATA_KEY = "sessionDataKey";
+    public static final String SAML_TOKEN_ID_COOKIE_NAME = "samlssoTokenId";
     public static final String AUTHENTICATION_RESULT = "AuthenticationResult";
     public static final String LOGIN_PAGE = "customLoginPage";
     public static final String CLAIM_DIALECT_URL = "http://wso2.org/claims";
@@ -79,6 +80,9 @@ public class SAMLSSOConstants {
     public static final String TRUE = Boolean.TRUE.toString();
     public static final String VALIDATION_RESPONSE = "validationResponse";
     public static final String GET_METHOD = "GET";
+    public static final String IS_LOGOUT_REQUEST_THREAD_LOCAL_KEY = "IsLogoutRequest";
+    public static final String SESSION_INDEX_THREAD_LOCAL_KEY = "SessionIndex";
+
     private SAMLSSOConstants() {
     }
 

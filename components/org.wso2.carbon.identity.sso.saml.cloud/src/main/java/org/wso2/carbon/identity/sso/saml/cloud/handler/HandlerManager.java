@@ -71,7 +71,7 @@ public class HandlerManager {
             if(authHandler.canHandle(messageContext)){
                 try {
                     return authHandler.validateAuthnResponseFromFramework(messageContext, authnResult, identityRequest);
-                }catch(IdentityException | IOException e) {
+                } catch(IdentityException | IOException e) {
                     throw new SAML2Exception("Authentication Request Validation Failed.", e);
                 }
             }

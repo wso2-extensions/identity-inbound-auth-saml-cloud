@@ -20,27 +20,22 @@ package org.wso2.carbon.identity.sso.saml.cloud.response;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.joda.time.DateTime;
 import org.opensaml.common.SAMLVersion;
-import org.opensaml.saml2.core.Assertion;
-import org.opensaml.saml2.core.EncryptedAssertion;
-import org.opensaml.saml2.core.Response;
+import org.opensaml.saml2.core.LogoutResponse;
 import org.opensaml.saml2.core.Status;
 import org.opensaml.saml2.core.StatusCode;
 import org.opensaml.saml2.core.StatusMessage;
 import org.opensaml.saml2.core.impl.StatusBuilder;
 import org.opensaml.saml2.core.impl.StatusCodeBuilder;
 import org.opensaml.saml2.core.impl.StatusMessageBuilder;
-import org.opensaml.xml.encryption.EncryptionConstants;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityMessageContext;
 import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.model.SAMLSSOServiceProviderDO;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
-import org.wso2.carbon.identity.sso.saml.cloud.builders.SignKeyDataHolder;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 
-public class SAMLLoginResponse extends SAMLResponse {
+public class SAMLLogoutResponse extends SAMLResponse {
 
     private String respString;
     private String relayState;
@@ -49,14 +44,14 @@ public class SAMLLoginResponse extends SAMLResponse {
     private String authenticatedIdPs;
     private String tenantDomain;
 
-    protected SAMLLoginResponse(IdentityResponseBuilder builder) {
+    protected SAMLLogoutResponse(IdentityResponseBuilder builder) {
         super(builder);
-        this.respString = ((SAMLLoginResponseBuilder) builder).respString;
-        this.relayState = ((SAMLLoginResponseBuilder) builder).relayState;
-        this.acsUrl = ((SAMLLoginResponseBuilder) builder).acsUrl;
-        this.authenticatedIdPs = ((SAMLLoginResponseBuilder) builder).authenticatedIdPs;
-        this.tenantDomain = ((SAMLLoginResponseBuilder) builder).tenantDomain;
-        this.subject = ((SAMLLoginResponseBuilder) builder).subject;
+        this.respString = ((SAMLLogoutResponseBuilder) builder).respString;
+        this.relayState = ((SAMLLogoutResponseBuilder) builder).relayState;
+        this.acsUrl = ((SAMLLogoutResponseBuilder) builder).acsUrl;
+        this.authenticatedIdPs = ((SAMLLogoutResponseBuilder) builder).authenticatedIdPs;
+        this.tenantDomain = ((SAMLLogoutResponseBuilder) builder).tenantDomain;
+        this.subject = ((SAMLLogoutResponseBuilder) builder).subject;
     }
 
     public String getRespString() {
@@ -87,9 +82,9 @@ public class SAMLLoginResponse extends SAMLResponse {
         return (SAMLMessageContext)this.context;
     }
 
-    public static class SAMLLoginResponseBuilder extends SAMLResponseBuilder {
+    public static class SAMLLogoutResponseBuilder extends SAMLResponseBuilder {
 
-        private static Log log = LogFactory.getLog(SAMLLoginResponseBuilder.class);
+        private static Log log = LogFactory.getLog(SAMLLogoutResponseBuilder.class);
 
         private String respString;
         private String relayState;
@@ -98,12 +93,12 @@ public class SAMLLoginResponse extends SAMLResponse {
         private String authenticatedIdPs;
         private String tenantDomain;
 
-        public SAMLLoginResponseBuilder(IdentityMessageContext context) {
+        public SAMLLogoutResponseBuilder(IdentityMessageContext context) {
             super(context);
         }
 
-        public SAMLLoginResponse build(){
-            return new SAMLLoginResponse(this);
+        public SAMLLogoutResponse build(){
+            return new SAMLLogoutResponse(this);
         }
 
         public String buildResponse() throws IdentityException {
@@ -112,7 +107,7 @@ public class SAMLLoginResponse extends SAMLResponse {
             if (log.isDebugEnabled()) {
                 log.debug("Building SAML Response for the consumer '" + messageContext.getAssertionConsumerURL() + "'");
             }
-            Response response = new org.opensaml.saml2.core.impl.ResponseBuilder().buildObject();
+            LogoutResponse response = new org.opensaml.saml2.core.impl.LogoutResponseBuilder().buildObject();
             response.setIssuer(SAMLSSOUtil.getIssuer());
             response.setID(SAMLSSOUtil.createID());
             if (!messageContext.isIdpInitSSO()) {
@@ -121,65 +116,44 @@ public class SAMLLoginResponse extends SAMLResponse {
             response.setDestination(messageContext.getAssertionConsumerURL());
             response.setStatus(buildStatus(SAMLSSOConstants.StatusCodes.SUCCESS_CODE, null));
             response.setVersion(SAMLVersion.VERSION_20);
-            DateTime issueInstant = new DateTime();
-            DateTime notOnOrAfter = new DateTime(issueInstant.getMillis()
-                                                 + SAMLSSOUtil.getSAMLResponseValidityPeriod() * 60 * 1000L);
-            response.setIssueInstant(issueInstant);
-            String sessionId = "";
-            Assertion assertion = SAMLSSOUtil.buildSAMLAssertion(messageContext, notOnOrAfter, sessionId);
 
-            if (serviceProviderDO.isDoEnableEncryptedAssertion()) {
-
-                String domainName = messageContext.getTenantDomain();
-                String alias = serviceProviderDO.getCertAlias();
-                if (alias != null) {
-                    EncryptedAssertion encryptedAssertion =
-                            SAMLSSOUtil.setEncryptedAssertion(assertion,
-                                                              EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256, alias,
-                                                              domainName);
-                    response.getEncryptedAssertions().add(encryptedAssertion);
-                }
-            } else {
-                response.getAssertions().add(assertion);
-            }
-
-            if (serviceProviderDO.isDoSignResponse()) {
-                SAMLSSOUtil.setSignature(response, serviceProviderDO.getSigningAlgorithmUri(), serviceProviderDO
-                        .getDigestAlgorithmUri(), new SignKeyDataHolder(messageContext.getAuthenticationResult()
-                                                                                      .getSubject().getAuthenticatedSubjectIdentifier()));
-            }
+//            if (serviceProviderDO.isDoSignResponse()) {
+//                SAMLSSOUtil.setSignature(response, serviceProviderDO.getSigningAlgorithmUri(), serviceProviderDO
+//                        .getDigestAlgorithmUri(), new SignKeyDataHolder(messageContext.getAuthenticationResult()
+//                        .getSubject().getAuthenticatedSubjectIdentifier()));
+//            }
             this.setResponse(response);
             String respString = SAMLSSOUtil.encode(SAMLSSOUtil.marshall(response));
             this.setRespString(respString);
             return respString;
         }
 
-        public SAMLLoginResponseBuilder setRespString(String respString) {
+        public SAMLLogoutResponseBuilder setRespString(String respString) {
             this.respString = respString;
             return this;
         }
 
-        public SAMLLoginResponseBuilder setSubject(String subject) {
+        public SAMLLogoutResponseBuilder setSubject(String subject) {
             this.subject = subject;
             return this;
         }
 
-        public SAMLLoginResponseBuilder setRelayState(String relayState) {
+        public SAMLLogoutResponseBuilder setRelayState(String relayState) {
             this.relayState = relayState;
             return this;
         }
 
-        public SAMLLoginResponseBuilder setAcsUrl(String acsUrl) {
+        public SAMLLogoutResponseBuilder setAcsUrl(String acsUrl) {
             this.acsUrl = acsUrl;
             return this;
         }
 
-        public SAMLLoginResponseBuilder setAuthenticatedIdPs(String authenticatedIdPs) {
+        public SAMLLogoutResponseBuilder setAuthenticatedIdPs(String authenticatedIdPs) {
             this.authenticatedIdPs = authenticatedIdPs;
             return this;
         }
 
-        public SAMLLoginResponseBuilder setTenantDomain(String tenantDomain) {
+        public SAMLLogoutResponseBuilder setTenantDomain(String tenantDomain) {
             this.tenantDomain = tenantDomain;
             return this;
         }

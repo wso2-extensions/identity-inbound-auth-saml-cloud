@@ -35,24 +35,24 @@ import org.wso2.carbon.identity.sso.saml.cloud.configs.AmazonConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.configs.ConcurConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.configs.GoToMeetingConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.configs.NetSuiteConfigs;
+import org.wso2.carbon.identity.sso.saml.cloud.configs.SAMLAuthenticatorConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.configs.SalesForceConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.configs.ZuoraConfigs;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.auth.IDPInitAuthHandler;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.auth.SPInitAuthHandler;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.validator.IDPInitSAMLValidator;
-import org.wso2.carbon.identity.sso.saml.cloud.handler.validator.SAMLValidator;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.validator.SPInitSAMLValidator;
 import org.wso2.carbon.identity.sso.saml.cloud.processor.IDPInitAuthnRequestProcessor;
+import org.wso2.carbon.identity.sso.saml.cloud.processor.SPInitSSOAuthnRequestProcessor;
 import org.wso2.carbon.identity.sso.saml.cloud.processor.SSOLoginProcessor;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdentityRequestFactory;
 import org.wso2.carbon.identity.sso.saml.cloud.response.HttpSAMLResponseFactory;
-import org.wso2.carbon.identity.sso.saml.cloud.configs.SAMLAuthenticatorConfigs;
-import org.wso2.carbon.identity.sso.saml.cloud.processor.SPInitSSOAuthnRequestProcessor;
+import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLCloudFrameworkLogoutResponseFactory;
+import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.wso2.carbon.utils.ConfigurationContextService;
-import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -105,6 +105,8 @@ public class IdentitySAMLSSOServiceComponent {
                 SAMLIdentityRequestFactory(), null);
         ctxt.getBundleContext().registerService(HttpIdentityResponseFactory.class.getName(), new
                 HttpSAMLResponseFactory(), null);
+        ctxt.getBundleContext().registerService(HttpIdentityResponseFactory.class.getName(), new
+                SAMLCloudFrameworkLogoutResponseFactory(), null);
         ctxt.getBundleContext().registerService(IdentityProcessor.class.getName(), new IDPInitAuthnRequestProcessor()
                 , null);
         ctxt.getBundleContext().registerService(IdentityProcessor.class.getName(), new SPInitSSOAuthnRequestProcessor

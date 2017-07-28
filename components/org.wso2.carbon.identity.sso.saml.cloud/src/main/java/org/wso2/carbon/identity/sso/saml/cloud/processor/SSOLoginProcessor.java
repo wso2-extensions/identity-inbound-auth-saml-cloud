@@ -20,18 +20,22 @@ package org.wso2.carbon.identity.sso.saml.cloud.processor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.opensaml.saml2.core.LogoutRequest;
+import org.opensaml.xml.XMLObject;
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityMessageContext;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityProcessor;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityRequest;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticationResult;
+import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
+import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.HandlerManager;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdpInitRequest;
-import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLResponse;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLSpInitRequest;
-
+import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLResponse;
+import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 
 public class SSOLoginProcessor extends IdentityProcessor {
     private static Log log = LogFactory.getLog(SSOLoginProcessor.class);
@@ -66,8 +70,24 @@ public class SSOLoginProcessor extends IdentityProcessor {
     public SAMLResponse.SAMLResponseBuilder process(IdentityRequest identityRequest) throws FrameworkException {
 
         SAMLMessageContext messageContext = (SAMLMessageContext) getContextIfAvailable(identityRequest);
+        String decodedRequest;
+        try {
+            decodedRequest = SAMLSSOUtil.decode(((SAMLSpInitRequest) messageContext.getRequest()).getSamlRequest());
+        } catch (IdentityException e) {
+            throw new FrameworkException("Error while decoding saml request", e);
+        }
+        XMLObject request;
+        try {
+            request = SAMLSSOUtil.unmarshall(decodedRequest);
+        } catch (IdentityException e) {
+            throw new FrameworkException("Error while unmarshalling saml request", e);
+        }
+        if (request instanceof LogoutRequest) {
+            IdentityUtil.threadLocalProperties.get().remove(SAMLSSOConstants.IS_LOGOUT_REQUEST_THREAD_LOCAL_KEY);
+            IdentityUtil.threadLocalProperties.get().put(SAMLSSOConstants.IS_LOGOUT_REQUEST_THREAD_LOCAL_KEY, true);
+        }
         AuthenticationResult authnResult = processResponseFromFrameworkLogin(messageContext, identityRequest);
-        return HandlerManager.getInstance().getResponse(messageContext,authnResult,identityRequest);
+        return HandlerManager.getInstance().getResponse(messageContext, authnResult, identityRequest);
     }
 
     @Override
