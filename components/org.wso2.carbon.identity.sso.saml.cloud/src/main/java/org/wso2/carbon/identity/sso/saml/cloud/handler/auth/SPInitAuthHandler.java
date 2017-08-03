@@ -235,7 +235,7 @@ public class SPInitAuthHandler extends AuthHandler {
                                                             value.getNameIDFormat(), value.getTenantDomain(),
                                                             value.getSigningAlgorithmUri(),
                                                             value.getDigestAlgorithmUri());
-                String logoutReqString = org.wso2.carbon.identity.sso.saml.util.SAMLSSOUtil.marshall(logoutReq);
+                String logoutReqString = SAMLSSOUtil.marshall(logoutReq);
                 logoutReqDTO.setLogoutResponse(logoutReqString);
                 logoutReqDTO.setRpSessionId(rpSessionsList.get(key));
                 singleLogoutReqDTOs.add(logoutReqDTO);
