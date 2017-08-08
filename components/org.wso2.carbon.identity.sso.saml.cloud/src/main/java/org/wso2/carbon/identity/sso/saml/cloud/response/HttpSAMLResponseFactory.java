@@ -77,7 +77,8 @@ public class HttpSAMLResponseFactory extends HttpIdentityResponseFactory {
     private HttpIdentityResponse.HttpIdentityResponseBuilder sendResponse(IdentityResponse identityResponse) {
         if (identityResponse instanceof SAMLLoginResponse) {
             SAMLLoginResponse loginResponse = ((SAMLLoginResponse) identityResponse);
-            HttpIdentityResponse.HttpIdentityResponseBuilder builder = new HttpIdentityResponse.HttpIdentityResponseBuilder();
+            HttpIdentityResponse.HttpIdentityResponseBuilder builder =
+                    new HttpIdentityResponse.HttpIdentityResponseBuilder();
 
             String authenticatedIdPs = loginResponse.getAuthenticatedIdPs();
             String relayState = loginResponse.getRelayState();
@@ -88,6 +89,7 @@ public class HttpSAMLResponseFactory extends HttpIdentityResponseFactory {
                 builder.setBody(getPostHtml(acUrl, relayState, authenticatedIdPs, loginResponse));
             }
             builder.setStatusCode(HttpServletResponse.SC_OK);
+            builder.setCookies(((SAMLLoginResponse) identityResponse).getContext().getCookies());
             return builder;
         } else {
             SAMLLogoutResponse logoutResponse = ((SAMLLogoutResponse) identityResponse);
@@ -103,6 +105,7 @@ public class HttpSAMLResponseFactory extends HttpIdentityResponseFactory {
             }
             builder.setStatusCode(HttpServletResponse.SC_OK);
             builder.setRedirectURL(acUrl);
+            builder.setCookies(((SAMLLogoutResponse) identityResponse).getContext().getCookies());
             return builder;
         }
     }

@@ -81,7 +81,6 @@ public class SAMLSSOConstants {
     public static final String VALIDATION_RESPONSE = "validationResponse";
     public static final String GET_METHOD = "GET";
     public static final String IS_LOGOUT_REQUEST_THREAD_LOCAL_KEY = "IsLogoutRequest";
-    public static final String SESSION_INDEX_THREAD_LOCAL_KEY = "SessionIndex";
 
     private SAMLSSOConstants() {
     }

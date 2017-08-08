@@ -71,10 +71,6 @@ public class SPInitSAMLValidator extends SAMLValidator {
         } else if (request instanceof LogoutRequest) {
             IdentityUtil.threadLocalProperties.get().remove(SAMLSSOConstants.IS_LOGOUT_REQUEST_THREAD_LOCAL_KEY);
             IdentityUtil.threadLocalProperties.get().put(SAMLSSOConstants.IS_LOGOUT_REQUEST_THREAD_LOCAL_KEY, true);
-            IdentityUtil.threadLocalProperties.get().remove(SAMLSSOConstants.SESSION_INDEX_THREAD_LOCAL_KEY);
-            IdentityUtil.threadLocalProperties.get().put(SAMLSSOConstants.SESSION_INDEX_THREAD_LOCAL_KEY,
-                                                         ((LogoutRequest) request).getSessionIndexes().get(0)
-                                                                                  .getSessionIndex());
             messageContext.setIssuer(((LogoutRequest) request).getIssuer().getValue());
             messageContext.setDestination(((LogoutRequest) request).getDestination());
             messageContext.setId(((LogoutRequest) request).getID());

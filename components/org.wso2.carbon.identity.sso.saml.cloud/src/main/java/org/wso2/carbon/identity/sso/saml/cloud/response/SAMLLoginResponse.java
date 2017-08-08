@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.sso.saml.cloud.response;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
@@ -39,6 +40,9 @@ import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.builders.SignKeyDataHolder;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
+import org.wso2.carbon.registry.core.utils.UUIDGenerator;
+
+import javax.servlet.http.Cookie;
 
 public class SAMLLoginResponse extends SAMLResponse {
 
@@ -126,6 +130,14 @@ public class SAMLLoginResponse extends SAMLResponse {
                                                  + SAMLSSOUtil.getSAMLResponseValidityPeriod() * 60 * 1000L);
             response.setIssueInstant(issueInstant);
             String sessionId = "";
+            Cookie ssoTokenIdCookie = SAMLSSOUtil.getTokenIdCookie(messageContext);
+            if (ssoTokenIdCookie != null) {
+                sessionId = ssoTokenIdCookie.getValue();
+            }
+            if (StringUtils.isEmpty(sessionId)) {
+                sessionId = UUIDGenerator.generateUUID();
+                SAMLSSOUtil.setTokenIdCookie(messageContext, sessionId);
+            }
             Assertion assertion = SAMLSSOUtil.buildSAMLAssertion(messageContext, notOnOrAfter, sessionId);
 
             if (serviceProviderDO.isDoEnableEncryptedAssertion()) {

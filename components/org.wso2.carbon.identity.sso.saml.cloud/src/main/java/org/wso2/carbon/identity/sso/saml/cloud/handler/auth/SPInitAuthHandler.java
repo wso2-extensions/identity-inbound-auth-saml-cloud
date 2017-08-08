@@ -29,9 +29,6 @@ import org.wso2.carbon.identity.application.authentication.framework.model.Authe
 import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.model.SAMLSSOServiceProviderDO;
 import org.wso2.carbon.identity.sso.saml.builders.SingleLogoutMessageBuilder;
-import org.wso2.carbon.identity.sso.saml.cache.SessionDataCache;
-import org.wso2.carbon.identity.sso.saml.cache.SessionDataCacheEntry;
-import org.wso2.carbon.identity.sso.saml.cache.SessionDataCacheKey;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.builders.signature.DefaultSSOSigner;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
@@ -78,7 +75,7 @@ public class SPInitAuthHandler extends AuthHandler {
         if (SAMLSSOUtil.isLogoutRequest()) {
             builder = new SAMLLogoutResponse.SAMLLogoutResponseBuilder(messageContext);
             String sessionDataKey = identityRequest.getParameter(SAMLSSOConstants.SESSION_DATA_KEY);
-            SAMLSSOSessionDTO sessionDTO = getSessionDataFromCache(sessionDataKey);
+            SAMLSSOSessionDTO sessionDTO = SAMLSSOUtil.getSessionDataFromCache(sessionDataKey);
 
             if (sessionDTO == null) {
                 throw new FrameworkException("Session not found in the cache.");
@@ -93,8 +90,8 @@ public class SPInitAuthHandler extends AuthHandler {
                 // sending LogoutRequests to other session participants
                 LogoutRequestSender.getInstance().sendLogoutRequests(singleLogoutReqDTOs.toArray(
                         new SingleLogoutRequestDTO[singleLogoutReqDTOs.size()]));
-                removeSession(sessionDTO.getSessionId(), validationResponseDTO.getIssuer());
-                removeSessionDataFromCache(sessionDataKey);
+                SAMLSSOUtil.removeSession(sessionDTO.getSessionId(), validationResponseDTO.getIssuer());
+                SAMLSSOUtil.removeSessionDataFromCache(sessionDataKey);
             } else {
                 throw new FrameworkException("SAML Request validation response not found in session DTO.");
             }
@@ -460,49 +457,4 @@ public class SPInitAuthHandler extends AuthHandler {
         return false;
     }
 
-    /**
-     * Get SAML session DTO from cache.
-     *
-     * @param sessionDataKey
-     * @return
-     */
-    private SAMLSSOSessionDTO getSessionDataFromCache(String sessionDataKey) {
-        SAMLSSOSessionDTO sessionDTO = null;
-        SessionDataCacheKey cacheKey = new SessionDataCacheKey(sessionDataKey);
-        SessionDataCacheEntry cacheEntry = SessionDataCache.getInstance().getValueFromCache(cacheKey);
-
-        if (cacheEntry != null) {
-            sessionDTO = cacheEntry.getSessionDTO();
-        }
-
-        return sessionDTO;
-    }
-
-    /**
-     * Clear session from cache
-     *
-     * @param sessionDataKey
-     */
-    private void removeSessionDataFromCache(String sessionDataKey) {
-        if (sessionDataKey != null) {
-            SessionDataCacheKey cacheKey = new SessionDataCacheKey(sessionDataKey);
-            SessionDataCache.getInstance().clearCacheEntry(cacheKey);
-        }
-    }
-
-    /**
-     * Remove persisted session.
-     *
-     * @param sessionId
-     * @param issuer
-     */
-    private static void removeSession(String sessionId, String issuer) {
-        SSOSessionPersistenceManager ssoSessionPersistenceManager = SSOSessionPersistenceManager
-                .getPersistenceManager();
-
-        String sessionIndex = ssoSessionPersistenceManager.getSessionIndexFromTokenId(sessionId);
-
-        SSOSessionPersistenceManager.removeSessionInfoDataFromCache(sessionIndex);
-        SSOSessionPersistenceManager.removeSessionIndexFromCache(sessionId);
-    }
 }

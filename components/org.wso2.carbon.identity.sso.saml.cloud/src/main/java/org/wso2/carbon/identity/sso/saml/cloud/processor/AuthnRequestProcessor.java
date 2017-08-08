@@ -40,6 +40,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import javax.servlet.http.Cookie;
 
 public abstract class AuthnRequestProcessor extends IdentityProcessor {
 
@@ -126,7 +127,13 @@ public abstract class AuthnRequestProcessor extends IdentityProcessor {
         authenticationRequest.addRequestQueryParam(FrameworkConstants.RequestParams.LOGOUT,
                                                    new String[]{Boolean.TRUE.toString()});
         AuthenticationRequestCacheEntry authRequest = new AuthenticationRequestCacheEntry(authenticationRequest);
-        String sessionId = SAMLSSOUtil.getSessionIndex();
+        String sessionId;
+        Cookie ssoTokenIdCookie = SAMLSSOUtil.getTokenIdCookie(context);
+        if (ssoTokenIdCookie != null) {
+            sessionId = ssoTokenIdCookie.getValue();
+        } else {
+            throw FrameworkRuntimeException.error("SSO Token ID cookie cannot be found");
+        }
         FrameworkUtils.addAuthenticationRequestToCache(sessionId, authRequest);
         InboundUtil.addContextToCache(sessionId, context);
         SAMLCloudFrameworkLogoutResponse.SAMLCloudFrameworkLogoutResponseBuilder

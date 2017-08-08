@@ -70,6 +70,7 @@ public class HandlerManager {
         for(AuthHandler authHandler : handlers){
             if(authHandler.canHandle(messageContext)){
                 try {
+                    messageContext.setCookies(identityRequest.getCookieMap());
                     return authHandler.validateAuthnResponseFromFramework(messageContext, authnResult, identityRequest);
                 } catch(IdentityException | IOException e) {
                     throw new SAML2Exception("Authentication Request Validation Failed.", e);
