@@ -55,6 +55,12 @@ public class SPInitSAMLValidator extends SAMLValidator {
             decodedRequest = SAMLSSOUtil.decodeForPost(identityRequest.getSamlRequest());
         }
         XMLObject request = SAMLSSOUtil.unmarshall(decodedRequest);
+        messageContext.setTenantDomain(messageContext.getRequest().getTenantDomain());
+        try {
+            SAMLSSOUtil.setTenantDomainInThreadLocal(messageContext.getRequest().getTenantDomain());
+        } catch (UserStoreException e) {
+            log.error("Error occurred while setting tenant domain to thread local.");
+        }
         if (request instanceof AuthnRequest) {
             messageContext.setDestination(((AuthnRequest) request).getDestination());
             messageContext.setId(((AuthnRequest) request).getID());
@@ -67,12 +73,7 @@ public class SPInitSAMLValidator extends SAMLValidator {
             messageContext.setIssuer(((LogoutRequest) request).getIssuer().getValue());
             messageContext.setDestination(((LogoutRequest) request).getDestination());
             messageContext.setId(((LogoutRequest) request).getID());
-        }
-        messageContext.setTenantDomain(messageContext.getRequest().getTenantDomain());
-        try {
-            SAMLSSOUtil.setTenantDomainInThreadLocal(messageContext.getRequest().getTenantDomain());
-        } catch (UserStoreException e) {
-            log.error("Error occurred while setting tenant domain to thread local.");
+            return true;
         }
         return false;
     }
