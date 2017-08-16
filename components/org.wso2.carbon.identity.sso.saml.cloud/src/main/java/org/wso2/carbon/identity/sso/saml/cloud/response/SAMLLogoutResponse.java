@@ -35,6 +35,9 @@ import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 
+/**
+ * SAML Response implementation for Logout Response.
+ */
 public class SAMLLogoutResponse extends SAMLResponse {
 
     private String respString;

@@ -83,8 +83,10 @@ public class SSOLoginProcessor extends IdentityProcessor {
             throw new FrameworkException("Error while unmarshalling saml request", e);
         }
         if (request instanceof LogoutRequest) {
-            IdentityUtil.threadLocalProperties.get().remove(SAMLSSOConstants.IS_LOGOUT_REQUEST_THREAD_LOCAL_KEY);
             IdentityUtil.threadLocalProperties.get().put(SAMLSSOConstants.IS_LOGOUT_REQUEST_THREAD_LOCAL_KEY, true);
+            IdentityUtil.threadLocalProperties.get()
+                                              .put(SAMLSSOConstants.LOGOUT_REQUEST_SESSION_INDEX_THREAD_LOCAL_KEY,
+                                                   ((LogoutRequest) request).getSessionIndexes().get(0));
         }
         AuthenticationResult authnResult = processResponseFromFrameworkLogin(messageContext, identityRequest);
         return HandlerManager.getInstance().getResponse(messageContext, authnResult, identityRequest);

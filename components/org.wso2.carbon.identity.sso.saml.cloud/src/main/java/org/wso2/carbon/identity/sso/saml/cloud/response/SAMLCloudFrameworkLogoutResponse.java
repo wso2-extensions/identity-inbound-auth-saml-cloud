@@ -18,6 +18,9 @@ package org.wso2.carbon.identity.sso.saml.cloud.response;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityMessageContext;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityResponse;
 
+/**
+ * Identity Response implementation for Identity Cloud Single Logout.
+ */
 public class SAMLCloudFrameworkLogoutResponse extends IdentityResponse {
 
     private String authName;

@@ -28,6 +28,7 @@ import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdpInitRequest;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.Cookie;
@@ -195,7 +196,7 @@ public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable
     }
 
     public Map<String, Cookie> getCookies() {
-        return cookies;
+        return Collections.unmodifiableMap(cookies);
     }
 
     public void setCookies(Map<String, Cookie> cookies) {

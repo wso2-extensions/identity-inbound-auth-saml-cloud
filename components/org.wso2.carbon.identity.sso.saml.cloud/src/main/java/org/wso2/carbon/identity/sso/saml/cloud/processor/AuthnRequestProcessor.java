@@ -18,6 +18,8 @@
 
 package org.wso2.carbon.identity.sso.saml.cloud.processor;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.cache.AuthenticationRequestCacheEntry;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.FrameworkLoginResponse;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.FrameworkRuntimeException;
@@ -32,6 +34,7 @@ import org.wso2.carbon.identity.application.authentication.framework.util.Framew
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
+import org.wso2.carbon.identity.sso.saml.cloud.exception.SAMLRuntimeException;
 import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLCloudFrameworkLogoutResponse;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 import org.wso2.carbon.registry.core.utils.UUIDGenerator;
@@ -43,6 +46,8 @@ import java.util.Map;
 import javax.servlet.http.Cookie;
 
 public abstract class AuthnRequestProcessor extends IdentityProcessor {
+
+    private static Log log = LogFactory.getLog(AuthnRequestProcessor.class);
 
     @Override
     public String getName() {
@@ -120,19 +125,23 @@ public abstract class AuthnRequestProcessor extends IdentityProcessor {
             authenticationRequest.setCommonAuthCallerPath(URLEncoder.encode(getCallbackPath(context),
                                                                             StandardCharsets.UTF_8.name()));
         } catch (UnsupportedEncodingException e) {
-            throw FrameworkRuntimeException.error("Error occurred while URL encoding callback path " +
+            throw SAMLRuntimeException.error("Error occurred while URL encoding callback path " +
                                                   this.getCallbackPath(context), e);
         }
 
         authenticationRequest.addRequestQueryParam(FrameworkConstants.RequestParams.LOGOUT,
                                                    new String[]{Boolean.TRUE.toString()});
         AuthenticationRequestCacheEntry authRequest = new AuthenticationRequestCacheEntry(authenticationRequest);
-        String sessionId;
+        String sessionId = null;
         Cookie ssoTokenIdCookie = SAMLSSOUtil.getTokenIdCookie(context);
         if (ssoTokenIdCookie != null) {
             sessionId = ssoTokenIdCookie.getValue();
         } else {
-            throw FrameworkRuntimeException.error("SSO Token ID cookie cannot be found");
+            String message = String.format("SSO Token ID cookie cannot be found Tenant Domain : %s, Issuer : %s ",
+                                           ((SAMLMessageContext) context).getTenantDomain(),
+                                           ((SAMLMessageContext) context).getIssuer());
+            log.warn(message);
+            throw SAMLRuntimeException.error(message);
         }
         FrameworkUtils.addAuthenticationRequestToCache(sessionId, authRequest);
         InboundUtil.addContextToCache(sessionId, context);

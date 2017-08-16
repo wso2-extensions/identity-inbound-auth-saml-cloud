@@ -1365,6 +1365,21 @@ public class SAMLSSOUtil {
     }
 
     /**
+     *
+     * @return
+     */
+    public static String getSessionIndexFromLogoutRequest() {
+        String sessionIndex = null;
+        Object sessionIndexObj =
+                IdentityUtil.threadLocalProperties.get()
+                                                  .get(SAMLSSOConstants.LOGOUT_REQUEST_SESSION_INDEX_THREAD_LOCAL_KEY);
+        if (sessionIndexObj != null) {
+            sessionIndex = String.valueOf(sessionIndexObj);
+        }
+        return sessionIndex;
+    }
+
+    /**
      * Get Default logout endpoint from server config.
      *
      * @return

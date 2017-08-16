@@ -22,6 +22,9 @@ import org.wso2.carbon.identity.application.authentication.framework.inbound.Inb
 
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Framework logout response factory implementation for Identity Cloud logout.
+ */
 public class SAMLCloudFrameworkLogoutResponseFactory extends FrameworkLogoutResponseFactory {
 
     @Override

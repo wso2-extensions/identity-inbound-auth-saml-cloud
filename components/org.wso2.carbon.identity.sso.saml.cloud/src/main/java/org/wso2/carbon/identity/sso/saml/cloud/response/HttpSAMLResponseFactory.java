@@ -37,6 +37,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 public class HttpSAMLResponseFactory extends HttpIdentityResponseFactory {
@@ -75,11 +76,14 @@ public class HttpSAMLResponseFactory extends HttpIdentityResponseFactory {
     }
 
     private HttpIdentityResponse.HttpIdentityResponseBuilder sendResponse(IdentityResponse identityResponse) {
+
+
+        HttpIdentityResponse.HttpIdentityResponseBuilder builder =
+                new HttpIdentityResponse.HttpIdentityResponseBuilder();
+        Map<String, Cookie> cookies;
+
         if (identityResponse instanceof SAMLLoginResponse) {
             SAMLLoginResponse loginResponse = ((SAMLLoginResponse) identityResponse);
-            HttpIdentityResponse.HttpIdentityResponseBuilder builder =
-                    new HttpIdentityResponse.HttpIdentityResponseBuilder();
-
             String authenticatedIdPs = loginResponse.getAuthenticatedIdPs();
             String relayState = loginResponse.getRelayState();
             String acUrl = getACSUrlWithTenantPartitioning(loginResponse.getAcsUrl(), loginResponse.getTenantDomain());
@@ -88,26 +92,26 @@ public class HttpSAMLResponseFactory extends HttpIdentityResponseFactory {
             } else {
                 builder.setBody(getPostHtml(acUrl, relayState, authenticatedIdPs, loginResponse));
             }
-            builder.setStatusCode(HttpServletResponse.SC_OK);
-            builder.setCookies(((SAMLLoginResponse) identityResponse).getContext().getCookies());
-            return builder;
+            cookies = ((SAMLLoginResponse) identityResponse).getContext().getCookies();
+
         } else {
             SAMLLogoutResponse logoutResponse = ((SAMLLogoutResponse) identityResponse);
-            HttpIdentityResponse.HttpIdentityResponseBuilder builder =
-                    new HttpIdentityResponse.HttpIdentityResponseBuilder();
-
             String relayState = logoutResponse.getRelayState();
-            String acUrl = getACSUrlWithTenantPartitioning(logoutResponse.getAcsUrl(), logoutResponse.getTenantDomain());
+            String acUrl = getACSUrlWithTenantPartitioning(logoutResponse.getAcsUrl(),
+                                                           logoutResponse.getTenantDomain());
             if (IdentitySAMLSSOServiceComponent.getSsoRedirectHtml() != null) {
                 builder.setBody(getRedirectHtml(acUrl, relayState, logoutResponse));
             } else {
                 builder.setBody(getPostHtml(acUrl, relayState, logoutResponse));
             }
-            builder.setStatusCode(HttpServletResponse.SC_OK);
             builder.setRedirectURL(acUrl);
-            builder.setCookies(((SAMLLogoutResponse) identityResponse).getContext().getCookies());
-            return builder;
+            cookies = ((SAMLLogoutResponse) identityResponse).getContext().getCookies();
         }
+        for (Map.Entry<String, Cookie> entry : cookies.entrySet()) {
+            builder.addCookie(entry.getValue());
+        }
+        builder.setStatusCode(HttpServletResponse.SC_OK);
+        return builder;
     }
 
     private String getRedirectHtml(String acUrl, String relayState, String authenticatedIdPs, SAMLLoginResponse
