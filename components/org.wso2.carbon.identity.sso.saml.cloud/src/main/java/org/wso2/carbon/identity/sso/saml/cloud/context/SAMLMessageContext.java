@@ -199,13 +199,10 @@ public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable
         return Collections.unmodifiableMap(cookies);
     }
 
-    public void setCookies(Map<String, Cookie> cookies) {
-        for (Map.Entry<String, Cookie> entry : cookies.entrySet()) {
-            this.addCookie(entry.getKey(), entry.getValue());
-        }
-    }
-
     public void addCookie(String key, Cookie cookie) {
-        this.cookies.put(key, cookie);
+        Cookie existingCookie = this.cookies.get(key);
+        if (existingCookie == null) {
+            this.cookies.put(key, cookie);
+        }
     }
 }

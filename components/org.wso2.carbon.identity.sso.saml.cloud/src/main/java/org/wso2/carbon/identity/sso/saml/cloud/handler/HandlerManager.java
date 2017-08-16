@@ -23,6 +23,7 @@ import org.wso2.carbon.identity.application.authentication.framework.inbound.Ide
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticationResult;
 import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.handler.HandlerComparator;
+import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 import org.wso2.carbon.identity.sso.saml.cloud.exception.SAML2Exception;
 import org.wso2.carbon.identity.sso.saml.cloud.exception.SAMLRuntimeException;
@@ -34,6 +35,7 @@ import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import javax.servlet.http.Cookie;
 
 public class HandlerManager {
 
@@ -70,7 +72,11 @@ public class HandlerManager {
         for(AuthHandler authHandler : handlers){
             if(authHandler.canHandle(messageContext)){
                 try {
-                    messageContext.setCookies(identityRequest.getCookieMap());
+                    Cookie ssoTokenIDCookie =
+                            identityRequest.getCookieMap().get(SAMLSSOConstants.SAML_TOKEN_ID_COOKIE_NAME);
+                    if (ssoTokenIDCookie != null) {
+                        messageContext.addCookie(SAMLSSOConstants.SAML_TOKEN_ID_COOKIE_NAME, ssoTokenIDCookie);
+                    }
                     return authHandler.validateAuthnResponseFromFramework(messageContext, authnResult, identityRequest);
                 } catch(IdentityException | IOException e) {
                     throw new SAML2Exception("Authentication Request Validation Failed.", e);

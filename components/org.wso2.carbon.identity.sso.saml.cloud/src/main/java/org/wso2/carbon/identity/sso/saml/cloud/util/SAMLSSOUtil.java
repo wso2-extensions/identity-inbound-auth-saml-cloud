@@ -1434,7 +1434,7 @@ public class SAMLSSOUtil {
         } else {
             samlssoTokenIdCookie.setMaxAge(defaultMaxAge);
         }
-        ((SAMLMessageContext) context).addCookie(SAML_TOKEN_ID_COOKIE_NAME, ssoCookie);
+        ((SAMLMessageContext) context).addCookie(SAMLSSOConstants.SAML_TOKEN_ID_COOKIE_NAME, ssoCookie);
     }
 
     /**
