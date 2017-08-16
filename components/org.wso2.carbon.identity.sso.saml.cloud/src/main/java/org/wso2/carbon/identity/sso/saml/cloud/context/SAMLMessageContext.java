@@ -18,7 +18,6 @@
 
 package org.wso2.carbon.identity.sso.saml.cloud.context;
 
-import org.opensaml.saml2.core.AuthnRequest;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityMessageContext;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticationResult;
@@ -26,11 +25,12 @@ import org.wso2.carbon.identity.core.model.SAMLSSOServiceProviderDO;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdentityRequest;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLIdpInitRequest;
-import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLSpInitRequest;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
+import javax.servlet.http.Cookie;
 
 public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable> extends IdentityMessageContext {
 
@@ -56,6 +56,7 @@ public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable
     private String tenantDomain;
     private int attributeConsumingServiceIndex;
     private SAMLSSOServiceProviderDO samlssoServiceProviderDO;
+    private Map<String, Cookie> cookies = new HashMap<>();
 
     public SAMLMessageContext(SAMLIdentityRequest request, Map<T1, T2> parameters) {
         super(request, parameters);
@@ -191,5 +192,19 @@ public class SAMLMessageContext<T1 extends Serializable, T2 extends Serializable
 
     public void setSamlssoServiceProviderDO(SAMLSSOServiceProviderDO samlssoServiceProviderDO) {
         this.samlssoServiceProviderDO = samlssoServiceProviderDO;
+    }
+
+    public Map<String, Cookie> getCookies() {
+        return cookies;
+    }
+
+    public void setCookies(Map<String, Cookie> cookies) {
+        for (Map.Entry<String, Cookie> entry : cookies.entrySet()) {
+            this.addCookie(entry.getKey(), entry.getValue());
+        }
+    }
+
+    public void addCookie(String key, Cookie cookie) {
+        this.cookies.put(key, cookie);
     }
 }

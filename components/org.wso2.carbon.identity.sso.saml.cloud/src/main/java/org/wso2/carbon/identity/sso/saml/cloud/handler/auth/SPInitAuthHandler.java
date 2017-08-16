@@ -17,17 +17,18 @@
  */
 package org.wso2.carbon.identity.sso.saml.cloud.handler.auth;
 
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.opensaml.saml2.core.AuthnRequest;
+import org.opensaml.saml2.core.LogoutRequest;
 import org.opensaml.saml2.core.RequestAbstractType;
 import org.opensaml.xml.security.x509.X509Credential;
+import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityRequest;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticationResult;
 import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.model.SAMLSSOServiceProviderDO;
+import org.wso2.carbon.identity.sso.saml.builders.SingleLogoutMessageBuilder;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.builders.signature.DefaultSSOSigner;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
@@ -35,15 +36,23 @@ import org.wso2.carbon.identity.sso.saml.cloud.exception.IdentitySAML2SSOExcepti
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLSpInitRequest;
 import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLErrorResponse;
 import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLLoginResponse;
+import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLLogoutResponse;
 import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLResponse;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.validators.SAML2HTTPRedirectDeflateSignatureValidator;
+import org.wso2.carbon.identity.sso.saml.dto.SAMLSSOReqValidationResponseDTO;
+import org.wso2.carbon.identity.sso.saml.dto.SAMLSSOSessionDTO;
+import org.wso2.carbon.identity.sso.saml.dto.SingleLogoutRequestDTO;
+import org.wso2.carbon.identity.sso.saml.logout.LogoutRequestSender;
+import org.wso2.carbon.identity.sso.saml.session.SSOSessionPersistenceManager;
+import org.wso2.carbon.identity.sso.saml.session.SessionInfoData;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class SPInitAuthHandler extends AuthHandler {
 
@@ -61,8 +70,44 @@ public class SPInitAuthHandler extends AuthHandler {
                                                                                AuthenticationResult authnResult,
                                                                                IdentityRequest identityRequest)
             throws IdentityException, IOException {
-        SAMLResponse.SAMLResponseBuilder builder;
-        if (authnResult == null || !authnResult.isAuthenticated()) {
+        SAMLResponse.SAMLResponseBuilder builder = null;
+
+        if (SAMLSSOUtil.isLogoutRequest()) {
+            builder = new SAMLLogoutResponse.SAMLLogoutResponseBuilder(messageContext);
+            String sessionDataKey = identityRequest.getParameter(SAMLSSOConstants.SESSION_DATA_KEY);
+            SAMLSSOSessionDTO sessionDTO = SAMLSSOUtil.getSessionDataFromCache(sessionDataKey);
+
+            if (sessionDTO == null) {
+                throw new FrameworkException("Session not found in the cache.");
+            }
+
+            SAMLSSOReqValidationResponseDTO validationResponseDTO = sessionDTO.getValidationRespDTO();
+
+            if (validationResponseDTO != null) {
+                List<SingleLogoutRequestDTO> singleLogoutReqDTOs =
+                        getSingleLogoutRequestDTOs(sessionDTO.getSessionId(), validationResponseDTO);
+
+                // sending LogoutRequests to other session participants
+                LogoutRequestSender.getInstance().sendLogoutRequests(singleLogoutReqDTOs.toArray(
+                        new SingleLogoutRequestDTO[singleLogoutReqDTOs.size()]));
+                SAMLSSOUtil.removeSession(sessionDTO.getSessionId(), validationResponseDTO.getIssuer());
+                SAMLSSOUtil.removeSessionDataFromCache(sessionDataKey);
+            } else {
+                throw new FrameworkException("SAML Request validation response not found in session DTO.");
+            }
+            messageContext.setIssuer(validationResponseDTO.getIssuer());
+            messageContext.setTenantDomain(sessionDTO.getTenantDomain());
+            messageContext.setSubject(sessionDTO.getSubject());
+            messageContext.setAssertionConsumerUrl(sessionDTO.getAssertionConsumerURL());
+            ((SAMLLogoutResponse.SAMLLogoutResponseBuilder) builder).setRelayState(validationResponseDTO.getIssuer());
+            ((SAMLLogoutResponse.SAMLLogoutResponseBuilder) builder).setAcsUrl(sessionDTO.getAssertionConsumerURL());
+            ((SAMLLogoutResponse.SAMLLogoutResponseBuilder) builder).setSubject(sessionDTO.getSubject());
+            ((SAMLLogoutResponse.SAMLLogoutResponseBuilder) builder).setAuthenticatedIdPs(null);
+            ((SAMLLogoutResponse.SAMLLogoutResponseBuilder) builder).setTenantDomain(sessionDTO.getTenantDomain());
+            ((SAMLLogoutResponse.SAMLLogoutResponseBuilder) builder).buildResponse();
+            return builder;
+
+        } else if (authnResult == null || !authnResult.isAuthenticated()) {
 
             if (log.isDebugEnabled() && authnResult != null) {
                 log.debug("Unauthenticated User.");
@@ -84,8 +129,7 @@ public class SPInitAuthHandler extends AuthHandler {
                         .getAssertionConsumerURL());
                 ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setSubject(messageContext.getSubject());
                 ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setAuthenticatedIdPs(null);
-                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setTenantDomain(messageContext
-                        .getTenantDomain());
+                ((SAMLLoginResponse.SAMLLoginResponseBuilder) builder).setTenantDomain(messageContext.getTenantDomain());
                 return builder;
 
             } else { // if forceAuthn or normal flow
@@ -147,6 +191,54 @@ public class SPInitAuthHandler extends AuthHandler {
                 return builder;
             }
         }
+    }
+
+    private List<SingleLogoutRequestDTO> getSingleLogoutRequestDTOs(String sessionId,
+            SAMLSSOReqValidationResponseDTO validationResponseDTO) throws IdentityException {
+
+        SSOSessionPersistenceManager ssoSessionPersistenceManager =
+                SSOSessionPersistenceManager.getPersistenceManager();
+        String sessionIndex = ssoSessionPersistenceManager.getSessionIndexFromTokenId(sessionId);
+
+        if (StringUtils.isEmpty(sessionIndex)) {
+            return new ArrayList<>();
+        }
+
+        SessionInfoData sessionInfoData = ssoSessionPersistenceManager.getSessionInfo(sessionIndex);
+        Map<String, SAMLSSOServiceProviderDO> sessionsList = sessionInfoData
+                .getServiceProviderList();
+        String issuer = validationResponseDTO.getIssuer();
+        SingleLogoutMessageBuilder logoutMsgBuilder = new SingleLogoutMessageBuilder();
+        Map<String, String> rpSessionsList = sessionInfoData.getRPSessionsList();
+        List<SingleLogoutRequestDTO> singleLogoutReqDTOs = new ArrayList<>();
+        for (Map.Entry<String, SAMLSSOServiceProviderDO> entry : sessionsList.entrySet()) {
+            String key = entry.getKey();
+            SAMLSSOServiceProviderDO value = entry.getValue();
+
+            if (!key.equals(issuer)) {
+                SingleLogoutRequestDTO logoutReqDTO = new SingleLogoutRequestDTO();
+                if (StringUtils.isNotBlank(value.getSloRequestURL())) {
+                    logoutReqDTO.setAssertionConsumerURL(value.getSloRequestURL());
+                } else if (StringUtils.isNotBlank(value.getSloResponseURL())) {
+                    logoutReqDTO.setAssertionConsumerURL(value.getSloResponseURL());
+                } else {
+                    logoutReqDTO.setAssertionConsumerURL(value.getAssertionConsumerUrl());
+                }
+
+                LogoutRequest logoutReq =
+                        logoutMsgBuilder.buildLogoutRequest(sessionInfoData.getSubject(key), sessionIndex,
+                                                            SAMLSSOConstants.SingleLogoutCodes.LOGOUT_USER,
+                                                            logoutReqDTO.getAssertionConsumerURL(),
+                                                            value.getNameIDFormat(), value.getTenantDomain(),
+                                                            value.getSigningAlgorithmUri(),
+                                                            value.getDigestAlgorithmUri());
+                String logoutReqString = SAMLSSOUtil.marshall(logoutReq);
+                logoutReqDTO.setLogoutResponse(logoutReqString);
+                logoutReqDTO.setRpSessionId(rpSessionsList.get(key));
+                singleLogoutReqDTOs.add(logoutReqDTO);
+            }
+        }
+        return singleLogoutReqDTOs;
     }
 
     private SAMLResponse.SAMLResponseBuilder authenticate(SAMLMessageContext messageContext, boolean isAuthenticated,
@@ -364,4 +456,5 @@ public class SPInitAuthHandler extends AuthHandler {
         }
         return false;
     }
+
 }

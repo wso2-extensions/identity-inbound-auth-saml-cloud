@@ -60,8 +60,10 @@ import org.wso2.carbon.identity.core.model.SAMLSSOServiceProviderDO;
 import org.wso2.carbon.identity.core.util.IdentityCoreConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.builders.SignKeyDataHolder;
-import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
+import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
+import org.wso2.carbon.identity.sso.saml.session.SSOSessionPersistenceManager;
+import org.wso2.carbon.registry.core.utils.UUIDGenerator;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -143,8 +145,26 @@ public class DefaultSAMLAssertionBuilder implements SAMLAssertionBuilder {
             authCtxClassRef.setAuthnContextClassRef(AuthnContext.PASSWORD_AUTHN_CTX);
             authContext.setAuthnContextClassRef(authCtxClassRef);
             authStmt.setAuthnContext(authContext);
+
+            SSOSessionPersistenceManager sessionPersistenceManager =
+                    SSOSessionPersistenceManager.getPersistenceManager();
+            String sessionIndexId;
+
+            if (sessionId != null && sessionPersistenceManager.isExistingTokenId(sessionId)) {
+                sessionIndexId = sessionPersistenceManager.getSessionIndexFromTokenId(sessionId);
+            } else {
+                sessionIndexId = UUIDGenerator.generateUUID();
+                sessionPersistenceManager.persistSession(sessionId, sessionIndexId);
+            }
             if (samlssoServiceProviderDO.isDoSingleLogout()) {
-                authStmt.setSessionIndex(sessionId);
+                authStmt.setSessionIndex(sessionIndexId);
+                SAMLSSOUtil.addSessionToCache(context, sessionId);
+                sessionPersistenceManager.persistSession(sessionIndexId,
+                                                         context.getAuthenticationResult().getSubject()
+                                                                .getAuthenticatedSubjectIdentifier(),
+                                                         context.getSamlssoServiceProviderDO(),
+                                                         context.getRpSessionId(), context.getIssuer(),
+                                                         context.getAssertionConsumerURL());
             }
             samlAssertion.getAuthnStatements().add(authStmt);
 
@@ -246,4 +266,5 @@ public class DefaultSAMLAssertionBuilder implements SAMLAssertionBuilder {
             return null;
         }
     }
+
 }

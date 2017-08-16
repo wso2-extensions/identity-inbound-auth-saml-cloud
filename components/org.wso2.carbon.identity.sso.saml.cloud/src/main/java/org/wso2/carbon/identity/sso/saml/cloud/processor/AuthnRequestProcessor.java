@@ -32,12 +32,15 @@ import org.wso2.carbon.identity.application.authentication.framework.util.Framew
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
+import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLCloudFrameworkLogoutResponse;
+import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 import org.wso2.carbon.registry.core.utils.UUIDGenerator;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import javax.servlet.http.Cookie;
 
 public abstract class AuthnRequestProcessor extends IdentityProcessor {
 
@@ -95,6 +98,51 @@ public abstract class AuthnRequestProcessor extends IdentityProcessor {
         responseBuilder.setRelyingParty(((SAMLMessageContext) context).getIssuer());
         //type parameter is using since framework checking it, but future it'll use AUTH_NAME
         responseBuilder.setAuthType(getName());
+        String commonAuthURL = IdentityUtil.getServerURL(FrameworkConstants.COMMONAUTH, true, true);
+        responseBuilder.setRedirectURL(commonAuthURL);
+        return responseBuilder;
+    }
+
+    protected SAMLCloudFrameworkLogoutResponse.SAMLCloudFrameworkLogoutResponseBuilder buildResponseForCloudLogout(
+            IdentityMessageContext context) {
+        IdentityRequest identityRequest = context.getRequest();
+        Map parameterMap = identityRequest.getParameterMap();
+        AuthenticationRequest authenticationRequest = new AuthenticationRequest();
+        authenticationRequest.appendRequestQueryParams(parameterMap);
+        for (Object entry : identityRequest.getHeaderMap().keySet()) {
+            authenticationRequest.addHeader((String) entry, identityRequest.getHeaderMap().get(entry));
+        }
+
+        authenticationRequest.setRelyingParty(((SAMLMessageContext) context).getIssuer());
+        authenticationRequest.setType(this.getName());
+
+        try {
+            authenticationRequest.setCommonAuthCallerPath(URLEncoder.encode(getCallbackPath(context),
+                                                                            StandardCharsets.UTF_8.name()));
+        } catch (UnsupportedEncodingException e) {
+            throw FrameworkRuntimeException.error("Error occurred while URL encoding callback path " +
+                                                  this.getCallbackPath(context), e);
+        }
+
+        authenticationRequest.addRequestQueryParam(FrameworkConstants.RequestParams.LOGOUT,
+                                                   new String[]{Boolean.TRUE.toString()});
+        AuthenticationRequestCacheEntry authRequest = new AuthenticationRequestCacheEntry(authenticationRequest);
+        String sessionId;
+        Cookie ssoTokenIdCookie = SAMLSSOUtil.getTokenIdCookie(context);
+        if (ssoTokenIdCookie != null) {
+            sessionId = ssoTokenIdCookie.getValue();
+        } else {
+            throw FrameworkRuntimeException.error("SSO Token ID cookie cannot be found");
+        }
+        FrameworkUtils.addAuthenticationRequestToCache(sessionId, authRequest);
+        InboundUtil.addContextToCache(sessionId, context);
+        SAMLCloudFrameworkLogoutResponse.SAMLCloudFrameworkLogoutResponseBuilder
+                responseBuilder = new SAMLCloudFrameworkLogoutResponse.SAMLCloudFrameworkLogoutResponseBuilder(context);
+        responseBuilder.setAuthName(this.getName());
+        responseBuilder.setContextKey(sessionId);
+        responseBuilder.setCallbackPath(this.getCallbackPath(context));
+        responseBuilder.setRelyingParty(((SAMLMessageContext) context).getIssuer());
+        responseBuilder.setAuthType(this.getName());
         String commonAuthURL = IdentityUtil.getServerURL(FrameworkConstants.COMMONAUTH, true, true);
         responseBuilder.setRedirectURL(commonAuthURL);
         return responseBuilder;

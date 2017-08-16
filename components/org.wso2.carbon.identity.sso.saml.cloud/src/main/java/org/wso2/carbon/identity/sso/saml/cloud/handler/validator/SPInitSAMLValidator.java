@@ -20,8 +20,11 @@ package org.wso2.carbon.identity.sso.saml.cloud.handler.validator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.opensaml.saml2.core.AuthnRequest;
+import org.opensaml.saml2.core.LogoutRequest;
 import org.opensaml.xml.XMLObject;
 import org.wso2.carbon.identity.base.IdentityException;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
+import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLSpInitRequest;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
@@ -65,6 +68,18 @@ public class SPInitSAMLValidator extends SAMLValidator {
             }
             SSOAuthnRequestValidator reqValidator = new SPInitSSOAuthnRequestValidator(messageContext);
             return reqValidator.validate((AuthnRequest)request);
+        } else if (request instanceof LogoutRequest) {
+            IdentityUtil.threadLocalProperties.get().remove(SAMLSSOConstants.IS_LOGOUT_REQUEST_THREAD_LOCAL_KEY);
+            IdentityUtil.threadLocalProperties.get().put(SAMLSSOConstants.IS_LOGOUT_REQUEST_THREAD_LOCAL_KEY, true);
+            messageContext.setIssuer(((LogoutRequest) request).getIssuer().getValue());
+            messageContext.setDestination(((LogoutRequest) request).getDestination());
+            messageContext.setId(((LogoutRequest) request).getID());
+            messageContext.setTenantDomain(messageContext.getRequest().getTenantDomain());
+            try {
+                SAMLSSOUtil.setTenantDomainInThreadLocal(messageContext.getRequest().getTenantDomain());
+            } catch (UserStoreException e) {
+                log.error("Error occurred while setting tenant domain to thread local.");
+            }
         }
         return false;
     }

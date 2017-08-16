@@ -17,13 +17,13 @@
  */
 package org.wso2.carbon.identity.sso.saml.cloud.processor;
 
-
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
-import org.wso2.carbon.identity.application.authentication.framework.inbound.FrameworkLoginResponse;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityRequest;
+import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityResponse;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 import org.wso2.carbon.identity.sso.saml.cloud.handler.HandlerManager;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLSpInitRequest;
+import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 
 import java.util.HashMap;
 
@@ -46,11 +46,17 @@ public class SPInitSSOAuthnRequestProcessor extends AuthnRequestProcessor {
     }
 
     @Override
-    public FrameworkLoginResponse.FrameworkLoginResponseBuilder process(IdentityRequest identityRequest) throws
+    public IdentityResponse.IdentityResponseBuilder process(IdentityRequest identityRequest) throws
             FrameworkException {
         SAMLMessageContext messageContext = new SAMLMessageContext((SAMLSpInitRequest) identityRequest, new
                 HashMap<String, String>());
         HandlerManager.getInstance().validateRequest(messageContext);
-        return buildResponseForFrameworkLogin(messageContext);
+        boolean isLogoutRequest = SAMLSSOUtil.isLogoutRequest();
+        if (!isLogoutRequest) {
+            return buildResponseForFrameworkLogin(messageContext);
+        } else {
+            return buildResponseForCloudLogout(messageContext);
+        }
     }
+
 }

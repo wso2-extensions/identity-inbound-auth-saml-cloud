@@ -18,7 +18,7 @@
 
 package org.wso2.carbon.identity.sso.saml.cloud.response;
 
-import org.opensaml.saml2.core.Response;
+import org.opensaml.saml2.core.StatusResponseType;
 import org.opensaml.saml2.core.impl.ResponseBuilder;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityMessageContext;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityResponse;
@@ -26,20 +26,20 @@ import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 
 public class SAMLResponse extends IdentityResponse {
 
-    private Response response;
+    private StatusResponseType response;
 
     protected SAMLResponse(IdentityResponseBuilder builder) {
         super(builder);
         this.response = ((SAMLResponseBuilder) builder).response;
     }
 
-    public Response getResponse() {
+    public StatusResponseType getResponse() {
         return this.response;
     }
 
     public static class SAMLResponseBuilder extends IdentityResponseBuilder {
 
-        private Response response;
+        private StatusResponseType response;
 
         //Do the bootstrap first
         static {
@@ -52,7 +52,7 @@ public class SAMLResponse extends IdentityResponse {
             this.response = responseBuilder.buildObject();
         }
 
-        public SAMLResponseBuilder setResponse(Response response) {
+        public SAMLResponseBuilder setResponse(StatusResponseType response) {
             this.response = response;
             return this;
         }
