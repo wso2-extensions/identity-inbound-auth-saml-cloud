@@ -23,7 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.opensaml.saml2.core.LogoutRequest;
 import org.opensaml.saml2.core.RequestAbstractType;
 import org.opensaml.xml.security.x509.X509Credential;
-import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
 import org.wso2.carbon.identity.application.authentication.framework.inbound.IdentityRequest;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticationResult;
 import org.wso2.carbon.identity.base.IdentityException;
@@ -33,6 +32,7 @@ import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 import org.wso2.carbon.identity.sso.saml.cloud.builders.signature.DefaultSSOSigner;
 import org.wso2.carbon.identity.sso.saml.cloud.context.SAMLMessageContext;
 import org.wso2.carbon.identity.sso.saml.cloud.exception.IdentitySAML2SSOException;
+import org.wso2.carbon.identity.sso.saml.cloud.exception.SAML2Exception;
 import org.wso2.carbon.identity.sso.saml.cloud.request.SAMLSpInitRequest;
 import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLErrorResponse;
 import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLLoginResponse;
@@ -51,6 +51,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -75,10 +76,19 @@ public class SPInitAuthHandler extends AuthHandler {
         if (SAMLSSOUtil.isLogoutRequest()) {
             builder = new SAMLLogoutResponse.SAMLLogoutResponseBuilder(messageContext);
             String sessionDataKey = identityRequest.getParameter(SAMLSSOConstants.SESSION_DATA_KEY);
+
+            if (StringUtils.isEmpty(sessionDataKey)) {
+                String msg = "Session Data Key is null of empty.";
+                log.error(msg);
+                throw new SAML2Exception(msg);
+            }
+
             SAMLSSOSessionDTO sessionDTO = SAMLSSOUtil.getSessionDataFromCache(sessionDataKey);
 
             if (sessionDTO == null) {
-                throw new FrameworkException("Session not found in the cache.");
+                String msg = "Session not found in cache for sessionDataKey : " + sessionDataKey;
+                log.error(msg);
+                throw new SAML2Exception(msg);
             }
 
             SAMLSSOReqValidationResponseDTO validationResponseDTO = sessionDTO.getValidationRespDTO();
@@ -93,7 +103,7 @@ public class SPInitAuthHandler extends AuthHandler {
                 SAMLSSOUtil.removeSession(sessionDTO.getSessionId(), validationResponseDTO.getIssuer());
                 SAMLSSOUtil.removeSessionDataFromCache(sessionDataKey);
             } else {
-                throw new FrameworkException("SAML Request validation response not found in session DTO.");
+                throw new SAML2Exception("SAML Request validation response not found in session DTO.");
             }
             messageContext.setIssuer(validationResponseDTO.getIssuer());
             messageContext.setTenantDomain(sessionDTO.getTenantDomain());
@@ -201,10 +211,25 @@ public class SPInitAuthHandler extends AuthHandler {
         String sessionIndex = ssoSessionPersistenceManager.getSessionIndexFromTokenId(sessionId);
 
         if (StringUtils.isEmpty(sessionIndex)) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
 
         SessionInfoData sessionInfoData = ssoSessionPersistenceManager.getSessionInfo(sessionIndex);
+
+        String sessionIndexFromLogoutReq = SAMLSSOUtil.getSessionIndexFromLogoutRequest();
+
+        if (StringUtils.isNotEmpty(sessionIndexFromLogoutReq) && sessionIndexFromLogoutReq.equals(sessionIndex)) {
+            String msg = "Session indices from logout request and cache doesn't match";
+            log.error(msg);
+            throw new SAML2Exception(msg);
+        }
+
+        if (sessionInfoData == null) {
+            String msg = "Session Info Data cannot be found in the session cache. Session Index : " + sessionIndex;
+            log.error(msg);
+            throw new SAML2Exception(msg);
+        }
+
         Map<String, SAMLSSOServiceProviderDO> sessionsList = sessionInfoData
                 .getServiceProviderList();
         String issuer = validationResponseDTO.getIssuer();
@@ -223,6 +248,12 @@ public class SPInitAuthHandler extends AuthHandler {
                     logoutReqDTO.setAssertionConsumerURL(value.getSloResponseURL());
                 } else {
                     logoutReqDTO.setAssertionConsumerURL(value.getAssertionConsumerUrl());
+                }
+
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Creating logout request for Issuer : %s, ACS : %s, Tenant Domain : %s",
+                                            key.toString(), logoutReqDTO.getAssertionConsumerURL(),
+                                            value.getTenantDomain()));
                 }
 
                 LogoutRequest logoutReq =

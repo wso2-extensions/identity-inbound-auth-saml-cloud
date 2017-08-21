@@ -55,31 +55,25 @@ public class SPInitSAMLValidator extends SAMLValidator {
             decodedRequest = SAMLSSOUtil.decodeForPost(identityRequest.getSamlRequest());
         }
         XMLObject request = SAMLSSOUtil.unmarshall(decodedRequest);
+        messageContext.setTenantDomain(messageContext.getRequest().getTenantDomain());
+        try {
+            SAMLSSOUtil.setTenantDomainInThreadLocal(messageContext.getRequest().getTenantDomain());
+        } catch (UserStoreException e) {
+            log.error("Error occurred while setting tenant domain to thread local.");
+        }
         if (request instanceof AuthnRequest) {
             messageContext.setDestination(((AuthnRequest) request).getDestination());
             messageContext.setId(((AuthnRequest) request).getID());
             messageContext.setAssertionConsumerUrl(((AuthnRequest) request).getAssertionConsumerServiceURL());
             messageContext.setIsPassive(((AuthnRequest) request).isPassive());
-            messageContext.setTenantDomain(messageContext.getRequest().getTenantDomain());
-            try {
-                SAMLSSOUtil.setTenantDomainInThreadLocal(messageContext.getRequest().getTenantDomain());
-            } catch (UserStoreException e) {
-                log.error("Error occurred while setting tenant domain to thread local.");
-            }
             SSOAuthnRequestValidator reqValidator = new SPInitSSOAuthnRequestValidator(messageContext);
             return reqValidator.validate((AuthnRequest)request);
         } else if (request instanceof LogoutRequest) {
-            IdentityUtil.threadLocalProperties.get().remove(SAMLSSOConstants.IS_LOGOUT_REQUEST_THREAD_LOCAL_KEY);
             IdentityUtil.threadLocalProperties.get().put(SAMLSSOConstants.IS_LOGOUT_REQUEST_THREAD_LOCAL_KEY, true);
             messageContext.setIssuer(((LogoutRequest) request).getIssuer().getValue());
             messageContext.setDestination(((LogoutRequest) request).getDestination());
             messageContext.setId(((LogoutRequest) request).getID());
-            messageContext.setTenantDomain(messageContext.getRequest().getTenantDomain());
-            try {
-                SAMLSSOUtil.setTenantDomainInThreadLocal(messageContext.getRequest().getTenantDomain());
-            } catch (UserStoreException e) {
-                log.error("Error occurred while setting tenant domain to thread local.");
-            }
+            return true;
         }
         return false;
     }

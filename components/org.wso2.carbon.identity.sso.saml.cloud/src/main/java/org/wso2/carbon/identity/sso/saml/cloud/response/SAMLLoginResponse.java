@@ -129,7 +129,7 @@ public class SAMLLoginResponse extends SAMLResponse {
             DateTime notOnOrAfter = new DateTime(issueInstant.getMillis()
                                                  + SAMLSSOUtil.getSAMLResponseValidityPeriod() * 60 * 1000L);
             response.setIssueInstant(issueInstant);
-            String sessionId = "";
+            String sessionId = null;
             Cookie ssoTokenIdCookie = SAMLSSOUtil.getTokenIdCookie(messageContext);
             if (ssoTokenIdCookie != null) {
                 sessionId = ssoTokenIdCookie.getValue();

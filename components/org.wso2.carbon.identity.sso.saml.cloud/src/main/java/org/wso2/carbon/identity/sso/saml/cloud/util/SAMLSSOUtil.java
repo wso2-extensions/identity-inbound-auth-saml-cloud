@@ -1365,6 +1365,21 @@ public class SAMLSSOUtil {
     }
 
     /**
+     *
+     * @return
+     */
+    public static String getSessionIndexFromLogoutRequest() {
+        String sessionIndex = null;
+        Object sessionIndexObj =
+                IdentityUtil.threadLocalProperties.get()
+                                                  .get(SAMLSSOConstants.LOGOUT_REQUEST_SESSION_INDEX_THREAD_LOCAL_KEY);
+        if (sessionIndexObj != null) {
+            sessionIndex = String.valueOf(sessionIndexObj);
+        }
+        return sessionIndex;
+    }
+
+    /**
      * Get Default logout endpoint from server config.
      *
      * @return
@@ -1419,7 +1434,7 @@ public class SAMLSSOUtil {
         } else {
             samlssoTokenIdCookie.setMaxAge(defaultMaxAge);
         }
-        ((SAMLMessageContext) context).addCookie(SAML_TOKEN_ID_COOKIE_NAME, ssoCookie);
+        ((SAMLMessageContext) context).addCookie(SAMLSSOConstants.SAML_TOKEN_ID_COOKIE_NAME, ssoCookie);
     }
 
     /**
