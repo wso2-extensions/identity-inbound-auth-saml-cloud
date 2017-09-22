@@ -148,24 +148,34 @@ public class SPInitSSOAuthnRequestValidator implements SSOAuthnRequestValidator{
 
         // Check for a Spoofing attack
         String acsUrl = authnReq.getAssertionConsumerServiceURL();
-        boolean acsValidated = false;
-        acsValidated = SAMLSSOUtil.validateACS(messageContext.getTenantDomain(), SAMLSSOUtil
-                .splitAppendedTenantDomain(messageContext.getIssuer()), authnReq
-                .getAssertionConsumerServiceURL());
 
-        if (!acsValidated) {
+        if(StringUtils.isBlank(acsUrl)){
+            String defaultACS = SAMLSSOUtil.getDefaultACS(messageContext.getTenantDomain(), SAMLSSOUtil
+                    .splitAppendedTenantDomain(messageContext.getIssuer()));
+            messageContext.setAssertionConsumerUrl(defaultACS);
             if (log.isDebugEnabled()) {
-                log.debug("Invalid ACS URL value " + acsUrl + " in the AuthnRequest message from " + spDO
-                        .getIssuer() + "\n" + "Possibly an attempt for a spoofing attack from Provider " +
-                        authnReq.getIssuer().getValue());
+                log.debug("Requested AcsUrl is empty and set the default acsUrl to the context. Default acsUrl : "
+                          + defaultACS);
             }
-            messageContext.setValid(false);
-            throw SAML2ClientException.error(SAMLSSOUtil.buildErrorResponse(SAMLSSOConstants.StatusCodes
-                    .REQUESTOR_ERROR, "Invalid Assertion " + "Consumer Service URL in the Authentication " +
-                    "Request" + ".", acsUrl));
+        }else{
+            boolean acsValidated = false;
+            acsValidated = SAMLSSOUtil.validateACS(messageContext.getTenantDomain(), SAMLSSOUtil
+                    .splitAppendedTenantDomain(messageContext.getIssuer()), acsUrl);
+            if (!acsValidated) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Invalid ACS URL value " + acsUrl + " in the AuthnRequest message from " + spDO
+                            .getIssuer() + "\n" + "Possibly an attempt for a spoofing attack from Provider " +
+                              authnReq.getIssuer().getValue());
+                }
+                messageContext.setValid(false);
+                throw SAML2ClientException.error(SAMLSSOUtil.buildErrorResponse(
+                        SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR,
+                        "Invalid Assertion Consumer Service URL in the Authentication Request" + ".", acsUrl));
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Requested acsUrl validation is " + acsValidated + ". Requested acsUrl : " + acsUrl);
+            }
         }
-
-
         //TODO : Validate the NameID Format
         if (subject != null && subject.getNameID() != null) {
             messageContext.setSubject(subject.getNameID().getValue());
