@@ -309,19 +309,27 @@ public class SPInitAuthHandler extends AuthHandler {
         } else {
             //Validate the assertion consumer url,  only if request is not signed.
             String acsUrl = messageContext.getAssertionConsumerURL();
-            if (StringUtils.isBlank(acsUrl) || !serviceProviderConfigs.getAssertionConsumerUrlList().contains
-                    (acsUrl)) {
-                String msg = "ALERT: Invalid Assertion Consumer URL value '" + acsUrl + "' in the " +
-                        "AuthnRequest message from  the issuer '" + serviceProviderConfigs.getIssuer() +
-                        "'. Possibly " + "an attempt for a spoofing attack";
-                if (log.isDebugEnabled()) {
-                    log.debug(msg);
+            if(StringUtils.isBlank(acsUrl)) {
+                String defaultACS = SAMLSSOUtil.getDefaultACS(messageContext.getTenantDomain(), SAMLSSOUtil
+                        .splitAppendedTenantDomain(messageContext.getIssuer()), acsUrl);
+                messageContext.setAssertionConsumerUrl(defaultACS);
+            }else{
+                if (!serviceProviderConfigs.getAssertionConsumerUrlList().contains
+                        (acsUrl)) {
+                    String msg = "ALERT: Invalid Assertion Consumer URL value '" + acsUrl + "' in the " +
+                                 "AuthnRequest message from  the issuer '" + serviceProviderConfigs.getIssuer() +
+                                 "'. Possibly " + "an attempt for a spoofing attack";
+                    if (log.isDebugEnabled()) {
+                        log.debug(msg);
+                    }
+                    builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
+                    ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).
+                            setErrorResponse(buildErrorResponse(
+                                    messageContext.getId(), SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg, acsUrl));
+                    return builder;
                 }
-                builder = new SAMLErrorResponse.SAMLErrorResponseBuilder(messageContext);
-                ((SAMLErrorResponse.SAMLErrorResponseBuilder) builder).setErrorResponse(buildErrorResponse
-                        (messageContext.getId(), SAMLSSOConstants.StatusCodes.REQUESTOR_ERROR, msg, acsUrl));
-                return builder;
             }
+
         }
 
         // if subject is specified in AuthnRequest only that user should be allowed to logged-in

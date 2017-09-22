@@ -538,6 +538,56 @@ public class SAMLSSOUtil {
         return destinationURLs;
     }
 
+    public static String getDefaultACS(String tenantDomain, String issuerName, String requestedACSUrl) throws
+                                                                                                      IdentityException {
+        SSOServiceProviderConfigManager stratosIdpConfigManager = SSOServiceProviderConfigManager.getInstance();
+
+        int tenantId;
+        if (StringUtils.isBlank(tenantDomain)) {
+            tenantDomain = MultitenantConstants.SUPER_TENANT_DOMAIN_NAME;
+            tenantId = MultitenantConstants.SUPER_TENANT_ID;
+        } else {
+            try {
+                tenantId = realmService.getTenantManager().getTenantId(tenantDomain);
+            } catch (UserStoreException e) {
+                throw new IdentitySAML2SSOException("Error occurred while retrieving tenant id for the domain : " +
+                                                    tenantDomain, e);
+            }
+        }
+
+        try {
+            PrivilegedCarbonContext.startTenantFlow();
+            PrivilegedCarbonContext privilegedCarbonContext = PrivilegedCarbonContext.getThreadLocalCarbonContext();
+            privilegedCarbonContext.setTenantId(tenantId);
+            privilegedCarbonContext.setTenantDomain(tenantDomain);
+
+            ApplicationManagementService appInfo = ApplicationManagementService.getInstance();
+            ServiceProvider application = appInfo.getServiceProviderByClientId(issuerName, SAMLSSOConstants
+                    .SAMLFormFields.SAML_SSO, tenantDomain);
+
+            for (InboundAuthenticationRequestConfig authenticationRequestConfig : application
+                    .getInboundAuthenticationConfig().getInboundAuthenticationRequestConfigs()) {
+                if (StringUtils.equals(authenticationRequestConfig.getInboundAuthType(), SAMLSSOConstants
+                        .SAMLFormFields.SAML_SSO) && StringUtils.equals(authenticationRequestConfig
+                                                                                .getInboundAuthKey(), issuerName)) {
+                    for (Property property : authenticationRequestConfig.getProperties()) {
+                        if(property.getName().equals(SAMLSSOConstants.SAMLFormFields.DEFAULT_ACS)){
+                            return property.getValue();
+                        }
+                    }
+                }
+            }
+            return null ;
+
+        } catch (IdentityApplicationManagementException e) {
+            throw new IdentitySAML2SSOException("Error occurred while validating existence of SAML service provider " +
+                                                "'" + issuerName + "' in the tenant domain '" + tenantDomain + "'");
+        } finally {
+            PrivilegedCarbonContext.endTenantFlow();
+        }
+
+    }
+
     public static boolean validateACS(String tenantDomain, String issuerName, String requestedACSUrl) throws
             IdentityException {
         SSOServiceProviderConfigManager stratosIdpConfigManager = SSOServiceProviderConfigManager.getInstance();
