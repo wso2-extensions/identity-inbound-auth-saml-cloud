@@ -35,7 +35,7 @@ import java.io.IOException;
 
 public class IdPInitSSOAuthnRequestValidator implements SSOAuthnRequestValidator{
 
-    private static Log log = LogFactory.getLog(IdPInitSSOAuthnRequestValidator.class);
+    private static final Log log = LogFactory.getLog(IdPInitSSOAuthnRequestValidator.class);
 
     private SAMLMessageContext messageContext;
     private String spEntityID;

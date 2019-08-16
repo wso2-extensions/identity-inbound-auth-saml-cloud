@@ -10,7 +10,7 @@ import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 
 public class NetSuiteConfigs extends AbstractInboundAuthenticatorConfig {
-    private static Log log = LogFactory.getLog(NetSuiteConfigs.class);
+    private static final Log log = LogFactory.getLog(NetSuiteConfigs.class);
     //This is the key
     @Override
     public String getAuthKey() {

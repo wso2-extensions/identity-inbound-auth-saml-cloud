@@ -154,7 +154,7 @@ public class SAMLSSOUtil {
     private static ConfigurationContextService configCtxService;
     private static HttpService httpService;
 
-    private static Log log = LogFactory.getLog(SAMLSSOUtil.class);
+    private static final Log log = LogFactory.getLog(SAMLSSOUtil.class);
     private static final String SECURITY_MANAGER_PROPERTY = Constants.XERCES_PROPERTY_PREFIX +
             Constants.SECURITY_MANAGER_PROPERTY;
     private static final int ENTITY_EXPANSION_LIMIT = 0;

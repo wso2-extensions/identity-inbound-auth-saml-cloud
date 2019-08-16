@@ -53,7 +53,7 @@ import java.util.Map;
 public class SAMLMetadataListener extends AbstractApplicationMgtListener {
 
     private static final ThreadLocal<String> SAMLSPCertificateThreadLocal = new ThreadLocal<>();
-    private Log log = LogFactory.getLog(SAMLMetadataListener.class);
+    private static final Log log = LogFactory.getLog(SAMLMetadataListener.class);
 
     @Override
     public int getDefaultOrderId() {

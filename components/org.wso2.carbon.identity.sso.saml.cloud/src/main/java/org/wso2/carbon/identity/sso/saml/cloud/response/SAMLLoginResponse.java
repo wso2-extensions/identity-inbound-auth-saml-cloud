@@ -93,7 +93,7 @@ public class SAMLLoginResponse extends SAMLResponse {
 
     public static class SAMLLoginResponseBuilder extends SAMLResponseBuilder {
 
-        private static Log log = LogFactory.getLog(SAMLLoginResponseBuilder.class);
+        private static final Log log = LogFactory.getLog(SAMLLoginResponseBuilder.class);
 
         private String respString;
         private String relayState;

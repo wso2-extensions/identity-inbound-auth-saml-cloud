@@ -29,7 +29,7 @@ import java.io.UnsupportedEncodingException;
 
 public class SAMLSpInitRequest extends SAMLIdentityRequest {
 
-    private static Log log = LogFactory.getLog(SAMLSpInitRequest.class);
+    private static final Log log = LogFactory.getLog(SAMLSpInitRequest.class);
     public SAMLSpInitRequest(SAMLSpInitRequestBuilder builder) {
         super(builder);
     }

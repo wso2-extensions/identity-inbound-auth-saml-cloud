@@ -29,7 +29,7 @@ import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 
 public class GoToMeetingConfigs extends AbstractInboundAuthenticatorConfig {
 
-    private static Log log = LogFactory.getLog(AmazonConfigs.class);
+    private static final Log log = LogFactory.getLog(AmazonConfigs.class);
 
     @Override
     public String getAuthKey() {

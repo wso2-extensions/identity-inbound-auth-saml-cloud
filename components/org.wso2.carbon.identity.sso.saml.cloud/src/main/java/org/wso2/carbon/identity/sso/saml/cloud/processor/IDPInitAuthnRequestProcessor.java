@@ -32,7 +32,7 @@ import java.util.HashMap;
 
 public class IDPInitAuthnRequestProcessor extends AuthnRequestProcessor {
 
-    private static Log log = LogFactory.getLog(IDPInitAuthnRequestProcessor.class);
+    private static final Log log = LogFactory.getLog(IDPInitAuthnRequestProcessor.class);
 
     @Override
     public int getPriority() {

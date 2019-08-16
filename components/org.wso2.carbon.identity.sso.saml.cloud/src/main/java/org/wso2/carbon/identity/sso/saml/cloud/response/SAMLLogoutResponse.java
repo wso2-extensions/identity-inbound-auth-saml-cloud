@@ -87,7 +87,7 @@ public class SAMLLogoutResponse extends SAMLResponse {
 
     public static class SAMLLogoutResponseBuilder extends SAMLResponseBuilder {
 
-        private static Log log = LogFactory.getLog(SAMLLogoutResponseBuilder.class);
+        private static final Log log = LogFactory.getLog(SAMLLogoutResponseBuilder.class);
 
         private String respString;
         private String relayState;

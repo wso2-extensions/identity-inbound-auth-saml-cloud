@@ -87,7 +87,7 @@ import java.util.Scanner;
 public class IdentitySAMLSSOServiceComponent {
 
 
-    private static Log log = LogFactory.getLog(IdentitySAMLSSOServiceComponent.class);
+    private static final Log log = LogFactory.getLog(IdentitySAMLSSOServiceComponent.class);
     private static int defaultSingleLogoutRetryCount = 5;
     private static long defaultSingleLogoutRetryInterval = 60000;
     private SPInitSSOAuthnRequestProcessor authnRequestProcessor;
