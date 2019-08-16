@@ -27,7 +27,7 @@ import org.wso2.carbon.identity.sso.saml.cloud.SAMLSSOConstants;
 
 public class ZuoraConfigs extends AbstractInboundAuthenticatorConfig {
 
-    private static Log log = LogFactory.getLog(ZuoraConfigs.class);
+    private static final Log log = LogFactory.getLog(ZuoraConfigs.class);
     //This is the key
     @Override
     public String getAuthKey() {

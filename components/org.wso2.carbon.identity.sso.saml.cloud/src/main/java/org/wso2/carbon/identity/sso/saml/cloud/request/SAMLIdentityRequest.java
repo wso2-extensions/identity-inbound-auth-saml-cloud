@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 
 public class SAMLIdentityRequest extends IdentityRequest {
-    private static Log log = LogFactory.getLog(SAMLIdentityRequest.class);
+    private static final Log log = LogFactory.getLog(SAMLIdentityRequest.class);
     public SAMLIdentityRequest(SAMLIdentityRequestBuilder builder) {
         super(builder);
     }

@@ -40,7 +40,7 @@ import java.io.IOException;
 
 public class SPInitSSOAuthnRequestValidator implements SSOAuthnRequestValidator{
 
-    private static Log log = LogFactory.getLog(SPInitSSOAuthnRequestValidator.class);
+    private static final Log log = LogFactory.getLog(SPInitSSOAuthnRequestValidator.class);
     private SAMLMessageContext messageContext;
 
 

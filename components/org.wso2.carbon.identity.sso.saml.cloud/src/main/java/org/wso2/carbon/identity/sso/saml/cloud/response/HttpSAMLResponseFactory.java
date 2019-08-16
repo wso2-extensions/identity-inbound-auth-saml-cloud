@@ -42,7 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public class HttpSAMLResponseFactory extends HttpIdentityResponseFactory {
 
-    private static Log log = LogFactory.getLog(HttpSAMLResponseFactory.class);
+    private static final Log log = LogFactory.getLog(HttpSAMLResponseFactory.class);
 
     @Override
     public String getName() {

@@ -47,7 +47,7 @@ import javax.servlet.http.Cookie;
 
 public abstract class AuthnRequestProcessor extends IdentityProcessor {
 
-    private static Log log = LogFactory.getLog(AuthnRequestProcessor.class);
+    private static final Log log = LogFactory.getLog(AuthnRequestProcessor.class);
 
     @Override
     public String getName() {

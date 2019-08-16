@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IDPInitAuthHandler extends AuthHandler {
-    private static Log log = LogFactory.getLog(IDPInitAuthHandler.class);
+    private static final Log log = LogFactory.getLog(IDPInitAuthHandler.class);
 
     @Override
     public boolean canHandle(SAMLMessageContext messageContext) {

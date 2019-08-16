@@ -38,7 +38,7 @@ import org.wso2.carbon.identity.sso.saml.cloud.response.SAMLResponse;
 import org.wso2.carbon.identity.sso.saml.cloud.util.SAMLSSOUtil;
 
 public class SSOLoginProcessor extends IdentityProcessor {
-    private static Log log = LogFactory.getLog(SSOLoginProcessor.class);
+    private static final Log log = LogFactory.getLog(SSOLoginProcessor.class);
 
     @Override
     public String getName() {

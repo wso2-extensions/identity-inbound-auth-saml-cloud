@@ -39,7 +39,7 @@ import java.util.Map;
 
 public class SAMLIdentityRequestFactory extends HttpIdentityRequestFactory {
 
-    private static Log log = LogFactory.getLog(SAMLIdentityRequestFactory.class);
+    private static final Log log = LogFactory.getLog(SAMLIdentityRequestFactory.class);
 
     @Override
     public String getName() {

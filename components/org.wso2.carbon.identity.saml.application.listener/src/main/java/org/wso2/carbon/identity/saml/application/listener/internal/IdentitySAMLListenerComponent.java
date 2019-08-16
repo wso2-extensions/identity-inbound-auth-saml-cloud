@@ -16,7 +16,7 @@ import org.wso2.carbon.user.core.service.RealmService;
  */
 public class IdentitySAMLListenerComponent {
 
-    private static Log log = LogFactory.getLog(IdentitySAMLListenerComponent.class);
+    private static final Log log = LogFactory.getLog(IdentitySAMLListenerComponent.class);
     private static BundleContext bundleContext;
     private static RealmService realmService;
 

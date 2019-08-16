@@ -32,7 +32,7 @@ import java.util.List;
 
 public class SAMLMetadataParser extends MetadataParser {
 
-    private static Log log = LogFactory.getLog(SAMLMetadataParser.class);
+    private static final Log log = LogFactory.getLog(SAMLMetadataParser.class);
     private String certificate;
 
     public String getCertificate() {

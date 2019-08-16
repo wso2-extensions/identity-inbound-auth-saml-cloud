@@ -57,7 +57,7 @@ import java.util.Map;
 
 public class SPInitAuthHandler extends AuthHandler {
 
-    private static Log log = LogFactory.getLog(SPInitAuthHandler.class);
+    private static final Log log = LogFactory.getLog(SPInitAuthHandler.class);
 
     @Override
     public boolean canHandle(SAMLMessageContext messageContext) {
